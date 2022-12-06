@@ -5,6 +5,8 @@ package runtime
 import (
 	"context"
 
+	"github.com/NpoolPlatform/g11n-manager/pkg/db/ent/appcountry"
+	"github.com/NpoolPlatform/g11n-manager/pkg/db/ent/applang"
 	"github.com/NpoolPlatform/g11n-manager/pkg/db/ent/country"
 	"github.com/NpoolPlatform/g11n-manager/pkg/db/ent/lang"
 	"github.com/NpoolPlatform/g11n-manager/pkg/db/ent/message"
@@ -19,6 +21,90 @@ import (
 // (default values, validators, hooks and policies) and stitches it
 // to their package variables.
 func init() {
+	appcountryMixin := schema.AppCountry{}.Mixin()
+	appcountry.Policy = privacy.NewPolicies(appcountryMixin[0], schema.AppCountry{})
+	appcountry.Hooks[0] = func(next ent.Mutator) ent.Mutator {
+		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+			if err := appcountry.Policy.EvalMutation(ctx, m); err != nil {
+				return nil, err
+			}
+			return next.Mutate(ctx, m)
+		})
+	}
+	appcountryMixinFields0 := appcountryMixin[0].Fields()
+	_ = appcountryMixinFields0
+	appcountryFields := schema.AppCountry{}.Fields()
+	_ = appcountryFields
+	// appcountryDescCreatedAt is the schema descriptor for created_at field.
+	appcountryDescCreatedAt := appcountryMixinFields0[0].Descriptor()
+	// appcountry.DefaultCreatedAt holds the default value on creation for the created_at field.
+	appcountry.DefaultCreatedAt = appcountryDescCreatedAt.Default.(func() uint32)
+	// appcountryDescUpdatedAt is the schema descriptor for updated_at field.
+	appcountryDescUpdatedAt := appcountryMixinFields0[1].Descriptor()
+	// appcountry.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	appcountry.DefaultUpdatedAt = appcountryDescUpdatedAt.Default.(func() uint32)
+	// appcountry.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	appcountry.UpdateDefaultUpdatedAt = appcountryDescUpdatedAt.UpdateDefault.(func() uint32)
+	// appcountryDescDeletedAt is the schema descriptor for deleted_at field.
+	appcountryDescDeletedAt := appcountryMixinFields0[2].Descriptor()
+	// appcountry.DefaultDeletedAt holds the default value on creation for the deleted_at field.
+	appcountry.DefaultDeletedAt = appcountryDescDeletedAt.Default.(func() uint32)
+	// appcountryDescAppID is the schema descriptor for app_id field.
+	appcountryDescAppID := appcountryFields[1].Descriptor()
+	// appcountry.DefaultAppID holds the default value on creation for the app_id field.
+	appcountry.DefaultAppID = appcountryDescAppID.Default.(func() uuid.UUID)
+	// appcountryDescCountryID is the schema descriptor for country_id field.
+	appcountryDescCountryID := appcountryFields[2].Descriptor()
+	// appcountry.DefaultCountryID holds the default value on creation for the country_id field.
+	appcountry.DefaultCountryID = appcountryDescCountryID.Default.(func() uuid.UUID)
+	// appcountryDescID is the schema descriptor for id field.
+	appcountryDescID := appcountryFields[0].Descriptor()
+	// appcountry.DefaultID holds the default value on creation for the id field.
+	appcountry.DefaultID = appcountryDescID.Default.(func() uuid.UUID)
+	applangMixin := schema.AppLang{}.Mixin()
+	applang.Policy = privacy.NewPolicies(applangMixin[0], schema.AppLang{})
+	applang.Hooks[0] = func(next ent.Mutator) ent.Mutator {
+		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+			if err := applang.Policy.EvalMutation(ctx, m); err != nil {
+				return nil, err
+			}
+			return next.Mutate(ctx, m)
+		})
+	}
+	applangMixinFields0 := applangMixin[0].Fields()
+	_ = applangMixinFields0
+	applangFields := schema.AppLang{}.Fields()
+	_ = applangFields
+	// applangDescCreatedAt is the schema descriptor for created_at field.
+	applangDescCreatedAt := applangMixinFields0[0].Descriptor()
+	// applang.DefaultCreatedAt holds the default value on creation for the created_at field.
+	applang.DefaultCreatedAt = applangDescCreatedAt.Default.(func() uint32)
+	// applangDescUpdatedAt is the schema descriptor for updated_at field.
+	applangDescUpdatedAt := applangMixinFields0[1].Descriptor()
+	// applang.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	applang.DefaultUpdatedAt = applangDescUpdatedAt.Default.(func() uint32)
+	// applang.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	applang.UpdateDefaultUpdatedAt = applangDescUpdatedAt.UpdateDefault.(func() uint32)
+	// applangDescDeletedAt is the schema descriptor for deleted_at field.
+	applangDescDeletedAt := applangMixinFields0[2].Descriptor()
+	// applang.DefaultDeletedAt holds the default value on creation for the deleted_at field.
+	applang.DefaultDeletedAt = applangDescDeletedAt.Default.(func() uint32)
+	// applangDescAppID is the schema descriptor for app_id field.
+	applangDescAppID := applangFields[1].Descriptor()
+	// applang.DefaultAppID holds the default value on creation for the app_id field.
+	applang.DefaultAppID = applangDescAppID.Default.(func() uuid.UUID)
+	// applangDescLangID is the schema descriptor for lang_id field.
+	applangDescLangID := applangFields[2].Descriptor()
+	// applang.DefaultLangID holds the default value on creation for the lang_id field.
+	applang.DefaultLangID = applangDescLangID.Default.(func() uuid.UUID)
+	// applangDescMain is the schema descriptor for main field.
+	applangDescMain := applangFields[3].Descriptor()
+	// applang.DefaultMain holds the default value on creation for the main field.
+	applang.DefaultMain = applangDescMain.Default.(bool)
+	// applangDescID is the schema descriptor for id field.
+	applangDescID := applangFields[0].Descriptor()
+	// applang.DefaultID holds the default value on creation for the id field.
+	applang.DefaultID = applangDescID.Default.(func() uuid.UUID)
 	countryMixin := schema.Country{}.Mixin()
 	country.Policy = privacy.NewPolicies(countryMixin[0], schema.Country{})
 	country.Hooks[0] = func(next ent.Mutator) ent.Mutator {

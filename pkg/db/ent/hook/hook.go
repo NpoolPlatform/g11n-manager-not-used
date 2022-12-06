@@ -9,6 +9,32 @@ import (
 	"github.com/NpoolPlatform/g11n-manager/pkg/db/ent"
 )
 
+// The AppCountryFunc type is an adapter to allow the use of ordinary
+// function as AppCountry mutator.
+type AppCountryFunc func(context.Context, *ent.AppCountryMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f AppCountryFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	mv, ok := m.(*ent.AppCountryMutation)
+	if !ok {
+		return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.AppCountryMutation", m)
+	}
+	return f(ctx, mv)
+}
+
+// The AppLangFunc type is an adapter to allow the use of ordinary
+// function as AppLang mutator.
+type AppLangFunc func(context.Context, *ent.AppLangMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f AppLangFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	mv, ok := m.(*ent.AppLangMutation)
+	if !ok {
+		return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.AppLangMutation", m)
+	}
+	return f(ctx, mv)
+}
+
 // The CountryFunc type is an adapter to allow the use of ordinary
 // function as Country mutator.
 type CountryFunc func(context.Context, *ent.CountryMutation) (ent.Value, error)

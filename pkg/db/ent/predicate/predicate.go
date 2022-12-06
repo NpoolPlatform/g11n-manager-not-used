@@ -6,6 +6,12 @@ import (
 	"entgo.io/ent/dialect/sql"
 )
 
+// AppCountry is the predicate function for appcountry builders.
+type AppCountry func(*sql.Selector)
+
+// AppLang is the predicate function for applang builders.
+type AppLang func(*sql.Selector)
+
 // Country is the predicate function for country builders.
 type Country func(*sql.Selector)
 

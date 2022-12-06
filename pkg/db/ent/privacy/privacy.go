@@ -150,6 +150,54 @@ func DenyMutationOperationRule(op ent.Op) MutationRule {
 	return OnMutationOperation(rule, op)
 }
 
+// The AppCountryQueryRuleFunc type is an adapter to allow the use of ordinary
+// functions as a query rule.
+type AppCountryQueryRuleFunc func(context.Context, *ent.AppCountryQuery) error
+
+// EvalQuery return f(ctx, q).
+func (f AppCountryQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.AppCountryQuery); ok {
+		return f(ctx, q)
+	}
+	return Denyf("ent/privacy: unexpected query type %T, expect *ent.AppCountryQuery", q)
+}
+
+// The AppCountryMutationRuleFunc type is an adapter to allow the use of ordinary
+// functions as a mutation rule.
+type AppCountryMutationRuleFunc func(context.Context, *ent.AppCountryMutation) error
+
+// EvalMutation calls f(ctx, m).
+func (f AppCountryMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
+	if m, ok := m.(*ent.AppCountryMutation); ok {
+		return f(ctx, m)
+	}
+	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.AppCountryMutation", m)
+}
+
+// The AppLangQueryRuleFunc type is an adapter to allow the use of ordinary
+// functions as a query rule.
+type AppLangQueryRuleFunc func(context.Context, *ent.AppLangQuery) error
+
+// EvalQuery return f(ctx, q).
+func (f AppLangQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.AppLangQuery); ok {
+		return f(ctx, q)
+	}
+	return Denyf("ent/privacy: unexpected query type %T, expect *ent.AppLangQuery", q)
+}
+
+// The AppLangMutationRuleFunc type is an adapter to allow the use of ordinary
+// functions as a mutation rule.
+type AppLangMutationRuleFunc func(context.Context, *ent.AppLangMutation) error
+
+// EvalMutation calls f(ctx, m).
+func (f AppLangMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
+	if m, ok := m.(*ent.AppLangMutation); ok {
+		return f(ctx, m)
+	}
+	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.AppLangMutation", m)
+}
+
 // The CountryQueryRuleFunc type is an adapter to allow the use of ordinary
 // functions as a query rule.
 type CountryQueryRuleFunc func(context.Context, *ent.CountryQuery) error
@@ -257,6 +305,10 @@ var _ QueryMutationRule = FilterFunc(nil)
 
 func queryFilter(q ent.Query) (Filter, error) {
 	switch q := q.(type) {
+	case *ent.AppCountryQuery:
+		return q.Filter(), nil
+	case *ent.AppLangQuery:
+		return q.Filter(), nil
 	case *ent.CountryQuery:
 		return q.Filter(), nil
 	case *ent.LangQuery:
@@ -270,6 +322,10 @@ func queryFilter(q ent.Query) (Filter, error) {
 
 func mutationFilter(m ent.Mutation) (Filter, error) {
 	switch m := m.(type) {
+	case *ent.AppCountryMutation:
+		return m.Filter(), nil
+	case *ent.AppLangMutation:
+		return m.Filter(), nil
 	case *ent.CountryMutation:
 		return m.Filter(), nil
 	case *ent.LangMutation:

@@ -8,6 +8,8 @@ import (
 	"fmt"
 	"sync"
 
+	"github.com/NpoolPlatform/g11n-manager/pkg/db/ent/appcountry"
+	"github.com/NpoolPlatform/g11n-manager/pkg/db/ent/applang"
 	"github.com/NpoolPlatform/g11n-manager/pkg/db/ent/country"
 	"github.com/NpoolPlatform/g11n-manager/pkg/db/ent/lang"
 	"github.com/NpoolPlatform/g11n-manager/pkg/db/ent/message"
@@ -26,10 +28,1437 @@ const (
 	OpUpdateOne = ent.OpUpdateOne
 
 	// Node types.
-	TypeCountry = "Country"
-	TypeLang    = "Lang"
-	TypeMessage = "Message"
+	TypeAppCountry = "AppCountry"
+	TypeAppLang    = "AppLang"
+	TypeCountry    = "Country"
+	TypeLang       = "Lang"
+	TypeMessage    = "Message"
 )
+
+// AppCountryMutation represents an operation that mutates the AppCountry nodes in the graph.
+type AppCountryMutation struct {
+	config
+	op            Op
+	typ           string
+	id            *uuid.UUID
+	created_at    *uint32
+	addcreated_at *int32
+	updated_at    *uint32
+	addupdated_at *int32
+	deleted_at    *uint32
+	adddeleted_at *int32
+	app_id        *uuid.UUID
+	country_id    *uuid.UUID
+	clearedFields map[string]struct{}
+	done          bool
+	oldValue      func(context.Context) (*AppCountry, error)
+	predicates    []predicate.AppCountry
+}
+
+var _ ent.Mutation = (*AppCountryMutation)(nil)
+
+// appcountryOption allows management of the mutation configuration using functional options.
+type appcountryOption func(*AppCountryMutation)
+
+// newAppCountryMutation creates new mutation for the AppCountry entity.
+func newAppCountryMutation(c config, op Op, opts ...appcountryOption) *AppCountryMutation {
+	m := &AppCountryMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeAppCountry,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withAppCountryID sets the ID field of the mutation.
+func withAppCountryID(id uuid.UUID) appcountryOption {
+	return func(m *AppCountryMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *AppCountry
+		)
+		m.oldValue = func(ctx context.Context) (*AppCountry, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().AppCountry.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withAppCountry sets the old AppCountry of the mutation.
+func withAppCountry(node *AppCountry) appcountryOption {
+	return func(m *AppCountryMutation) {
+		m.oldValue = func(context.Context) (*AppCountry, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m AppCountryMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m AppCountryMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of AppCountry entities.
+func (m *AppCountryMutation) SetID(id uuid.UUID) {
+	m.id = &id
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *AppCountryMutation) ID() (id uuid.UUID, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *AppCountryMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []uuid.UUID{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().AppCountry.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (m *AppCountryMutation) SetCreatedAt(u uint32) {
+	m.created_at = &u
+	m.addcreated_at = nil
+}
+
+// CreatedAt returns the value of the "created_at" field in the mutation.
+func (m *AppCountryMutation) CreatedAt() (r uint32, exists bool) {
+	v := m.created_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreatedAt returns the old "created_at" field's value of the AppCountry entity.
+// If the AppCountry object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AppCountryMutation) OldCreatedAt(ctx context.Context) (v uint32, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
+	}
+	return oldValue.CreatedAt, nil
+}
+
+// AddCreatedAt adds u to the "created_at" field.
+func (m *AppCountryMutation) AddCreatedAt(u int32) {
+	if m.addcreated_at != nil {
+		*m.addcreated_at += u
+	} else {
+		m.addcreated_at = &u
+	}
+}
+
+// AddedCreatedAt returns the value that was added to the "created_at" field in this mutation.
+func (m *AppCountryMutation) AddedCreatedAt() (r int32, exists bool) {
+	v := m.addcreated_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetCreatedAt resets all changes to the "created_at" field.
+func (m *AppCountryMutation) ResetCreatedAt() {
+	m.created_at = nil
+	m.addcreated_at = nil
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (m *AppCountryMutation) SetUpdatedAt(u uint32) {
+	m.updated_at = &u
+	m.addupdated_at = nil
+}
+
+// UpdatedAt returns the value of the "updated_at" field in the mutation.
+func (m *AppCountryMutation) UpdatedAt() (r uint32, exists bool) {
+	v := m.updated_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpdatedAt returns the old "updated_at" field's value of the AppCountry entity.
+// If the AppCountry object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AppCountryMutation) OldUpdatedAt(ctx context.Context) (v uint32, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUpdatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUpdatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpdatedAt: %w", err)
+	}
+	return oldValue.UpdatedAt, nil
+}
+
+// AddUpdatedAt adds u to the "updated_at" field.
+func (m *AppCountryMutation) AddUpdatedAt(u int32) {
+	if m.addupdated_at != nil {
+		*m.addupdated_at += u
+	} else {
+		m.addupdated_at = &u
+	}
+}
+
+// AddedUpdatedAt returns the value that was added to the "updated_at" field in this mutation.
+func (m *AppCountryMutation) AddedUpdatedAt() (r int32, exists bool) {
+	v := m.addupdated_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetUpdatedAt resets all changes to the "updated_at" field.
+func (m *AppCountryMutation) ResetUpdatedAt() {
+	m.updated_at = nil
+	m.addupdated_at = nil
+}
+
+// SetDeletedAt sets the "deleted_at" field.
+func (m *AppCountryMutation) SetDeletedAt(u uint32) {
+	m.deleted_at = &u
+	m.adddeleted_at = nil
+}
+
+// DeletedAt returns the value of the "deleted_at" field in the mutation.
+func (m *AppCountryMutation) DeletedAt() (r uint32, exists bool) {
+	v := m.deleted_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDeletedAt returns the old "deleted_at" field's value of the AppCountry entity.
+// If the AppCountry object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AppCountryMutation) OldDeletedAt(ctx context.Context) (v uint32, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDeletedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDeletedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDeletedAt: %w", err)
+	}
+	return oldValue.DeletedAt, nil
+}
+
+// AddDeletedAt adds u to the "deleted_at" field.
+func (m *AppCountryMutation) AddDeletedAt(u int32) {
+	if m.adddeleted_at != nil {
+		*m.adddeleted_at += u
+	} else {
+		m.adddeleted_at = &u
+	}
+}
+
+// AddedDeletedAt returns the value that was added to the "deleted_at" field in this mutation.
+func (m *AppCountryMutation) AddedDeletedAt() (r int32, exists bool) {
+	v := m.adddeleted_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetDeletedAt resets all changes to the "deleted_at" field.
+func (m *AppCountryMutation) ResetDeletedAt() {
+	m.deleted_at = nil
+	m.adddeleted_at = nil
+}
+
+// SetAppID sets the "app_id" field.
+func (m *AppCountryMutation) SetAppID(u uuid.UUID) {
+	m.app_id = &u
+}
+
+// AppID returns the value of the "app_id" field in the mutation.
+func (m *AppCountryMutation) AppID() (r uuid.UUID, exists bool) {
+	v := m.app_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldAppID returns the old "app_id" field's value of the AppCountry entity.
+// If the AppCountry object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AppCountryMutation) OldAppID(ctx context.Context) (v uuid.UUID, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldAppID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldAppID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldAppID: %w", err)
+	}
+	return oldValue.AppID, nil
+}
+
+// ClearAppID clears the value of the "app_id" field.
+func (m *AppCountryMutation) ClearAppID() {
+	m.app_id = nil
+	m.clearedFields[appcountry.FieldAppID] = struct{}{}
+}
+
+// AppIDCleared returns if the "app_id" field was cleared in this mutation.
+func (m *AppCountryMutation) AppIDCleared() bool {
+	_, ok := m.clearedFields[appcountry.FieldAppID]
+	return ok
+}
+
+// ResetAppID resets all changes to the "app_id" field.
+func (m *AppCountryMutation) ResetAppID() {
+	m.app_id = nil
+	delete(m.clearedFields, appcountry.FieldAppID)
+}
+
+// SetCountryID sets the "country_id" field.
+func (m *AppCountryMutation) SetCountryID(u uuid.UUID) {
+	m.country_id = &u
+}
+
+// CountryID returns the value of the "country_id" field in the mutation.
+func (m *AppCountryMutation) CountryID() (r uuid.UUID, exists bool) {
+	v := m.country_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCountryID returns the old "country_id" field's value of the AppCountry entity.
+// If the AppCountry object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AppCountryMutation) OldCountryID(ctx context.Context) (v uuid.UUID, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCountryID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCountryID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCountryID: %w", err)
+	}
+	return oldValue.CountryID, nil
+}
+
+// ClearCountryID clears the value of the "country_id" field.
+func (m *AppCountryMutation) ClearCountryID() {
+	m.country_id = nil
+	m.clearedFields[appcountry.FieldCountryID] = struct{}{}
+}
+
+// CountryIDCleared returns if the "country_id" field was cleared in this mutation.
+func (m *AppCountryMutation) CountryIDCleared() bool {
+	_, ok := m.clearedFields[appcountry.FieldCountryID]
+	return ok
+}
+
+// ResetCountryID resets all changes to the "country_id" field.
+func (m *AppCountryMutation) ResetCountryID() {
+	m.country_id = nil
+	delete(m.clearedFields, appcountry.FieldCountryID)
+}
+
+// Where appends a list predicates to the AppCountryMutation builder.
+func (m *AppCountryMutation) Where(ps ...predicate.AppCountry) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// Op returns the operation name.
+func (m *AppCountryMutation) Op() Op {
+	return m.op
+}
+
+// Type returns the node type of this mutation (AppCountry).
+func (m *AppCountryMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *AppCountryMutation) Fields() []string {
+	fields := make([]string, 0, 5)
+	if m.created_at != nil {
+		fields = append(fields, appcountry.FieldCreatedAt)
+	}
+	if m.updated_at != nil {
+		fields = append(fields, appcountry.FieldUpdatedAt)
+	}
+	if m.deleted_at != nil {
+		fields = append(fields, appcountry.FieldDeletedAt)
+	}
+	if m.app_id != nil {
+		fields = append(fields, appcountry.FieldAppID)
+	}
+	if m.country_id != nil {
+		fields = append(fields, appcountry.FieldCountryID)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *AppCountryMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case appcountry.FieldCreatedAt:
+		return m.CreatedAt()
+	case appcountry.FieldUpdatedAt:
+		return m.UpdatedAt()
+	case appcountry.FieldDeletedAt:
+		return m.DeletedAt()
+	case appcountry.FieldAppID:
+		return m.AppID()
+	case appcountry.FieldCountryID:
+		return m.CountryID()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *AppCountryMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case appcountry.FieldCreatedAt:
+		return m.OldCreatedAt(ctx)
+	case appcountry.FieldUpdatedAt:
+		return m.OldUpdatedAt(ctx)
+	case appcountry.FieldDeletedAt:
+		return m.OldDeletedAt(ctx)
+	case appcountry.FieldAppID:
+		return m.OldAppID(ctx)
+	case appcountry.FieldCountryID:
+		return m.OldCountryID(ctx)
+	}
+	return nil, fmt.Errorf("unknown AppCountry field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *AppCountryMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case appcountry.FieldCreatedAt:
+		v, ok := value.(uint32)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreatedAt(v)
+		return nil
+	case appcountry.FieldUpdatedAt:
+		v, ok := value.(uint32)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpdatedAt(v)
+		return nil
+	case appcountry.FieldDeletedAt:
+		v, ok := value.(uint32)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDeletedAt(v)
+		return nil
+	case appcountry.FieldAppID:
+		v, ok := value.(uuid.UUID)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetAppID(v)
+		return nil
+	case appcountry.FieldCountryID:
+		v, ok := value.(uuid.UUID)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCountryID(v)
+		return nil
+	}
+	return fmt.Errorf("unknown AppCountry field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *AppCountryMutation) AddedFields() []string {
+	var fields []string
+	if m.addcreated_at != nil {
+		fields = append(fields, appcountry.FieldCreatedAt)
+	}
+	if m.addupdated_at != nil {
+		fields = append(fields, appcountry.FieldUpdatedAt)
+	}
+	if m.adddeleted_at != nil {
+		fields = append(fields, appcountry.FieldDeletedAt)
+	}
+	return fields
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *AppCountryMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	case appcountry.FieldCreatedAt:
+		return m.AddedCreatedAt()
+	case appcountry.FieldUpdatedAt:
+		return m.AddedUpdatedAt()
+	case appcountry.FieldDeletedAt:
+		return m.AddedDeletedAt()
+	}
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *AppCountryMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	case appcountry.FieldCreatedAt:
+		v, ok := value.(int32)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddCreatedAt(v)
+		return nil
+	case appcountry.FieldUpdatedAt:
+		v, ok := value.(int32)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddUpdatedAt(v)
+		return nil
+	case appcountry.FieldDeletedAt:
+		v, ok := value.(int32)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddDeletedAt(v)
+		return nil
+	}
+	return fmt.Errorf("unknown AppCountry numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *AppCountryMutation) ClearedFields() []string {
+	var fields []string
+	if m.FieldCleared(appcountry.FieldAppID) {
+		fields = append(fields, appcountry.FieldAppID)
+	}
+	if m.FieldCleared(appcountry.FieldCountryID) {
+		fields = append(fields, appcountry.FieldCountryID)
+	}
+	return fields
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *AppCountryMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *AppCountryMutation) ClearField(name string) error {
+	switch name {
+	case appcountry.FieldAppID:
+		m.ClearAppID()
+		return nil
+	case appcountry.FieldCountryID:
+		m.ClearCountryID()
+		return nil
+	}
+	return fmt.Errorf("unknown AppCountry nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *AppCountryMutation) ResetField(name string) error {
+	switch name {
+	case appcountry.FieldCreatedAt:
+		m.ResetCreatedAt()
+		return nil
+	case appcountry.FieldUpdatedAt:
+		m.ResetUpdatedAt()
+		return nil
+	case appcountry.FieldDeletedAt:
+		m.ResetDeletedAt()
+		return nil
+	case appcountry.FieldAppID:
+		m.ResetAppID()
+		return nil
+	case appcountry.FieldCountryID:
+		m.ResetCountryID()
+		return nil
+	}
+	return fmt.Errorf("unknown AppCountry field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *AppCountryMutation) AddedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *AppCountryMutation) AddedIDs(name string) []ent.Value {
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *AppCountryMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *AppCountryMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *AppCountryMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *AppCountryMutation) EdgeCleared(name string) bool {
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *AppCountryMutation) ClearEdge(name string) error {
+	return fmt.Errorf("unknown AppCountry unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *AppCountryMutation) ResetEdge(name string) error {
+	return fmt.Errorf("unknown AppCountry edge %s", name)
+}
+
+// AppLangMutation represents an operation that mutates the AppLang nodes in the graph.
+type AppLangMutation struct {
+	config
+	op            Op
+	typ           string
+	id            *uuid.UUID
+	created_at    *uint32
+	addcreated_at *int32
+	updated_at    *uint32
+	addupdated_at *int32
+	deleted_at    *uint32
+	adddeleted_at *int32
+	app_id        *uuid.UUID
+	lang_id       *uuid.UUID
+	main          *bool
+	clearedFields map[string]struct{}
+	done          bool
+	oldValue      func(context.Context) (*AppLang, error)
+	predicates    []predicate.AppLang
+}
+
+var _ ent.Mutation = (*AppLangMutation)(nil)
+
+// applangOption allows management of the mutation configuration using functional options.
+type applangOption func(*AppLangMutation)
+
+// newAppLangMutation creates new mutation for the AppLang entity.
+func newAppLangMutation(c config, op Op, opts ...applangOption) *AppLangMutation {
+	m := &AppLangMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeAppLang,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withAppLangID sets the ID field of the mutation.
+func withAppLangID(id uuid.UUID) applangOption {
+	return func(m *AppLangMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *AppLang
+		)
+		m.oldValue = func(ctx context.Context) (*AppLang, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().AppLang.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withAppLang sets the old AppLang of the mutation.
+func withAppLang(node *AppLang) applangOption {
+	return func(m *AppLangMutation) {
+		m.oldValue = func(context.Context) (*AppLang, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m AppLangMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m AppLangMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of AppLang entities.
+func (m *AppLangMutation) SetID(id uuid.UUID) {
+	m.id = &id
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *AppLangMutation) ID() (id uuid.UUID, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *AppLangMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []uuid.UUID{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().AppLang.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (m *AppLangMutation) SetCreatedAt(u uint32) {
+	m.created_at = &u
+	m.addcreated_at = nil
+}
+
+// CreatedAt returns the value of the "created_at" field in the mutation.
+func (m *AppLangMutation) CreatedAt() (r uint32, exists bool) {
+	v := m.created_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreatedAt returns the old "created_at" field's value of the AppLang entity.
+// If the AppLang object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AppLangMutation) OldCreatedAt(ctx context.Context) (v uint32, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
+	}
+	return oldValue.CreatedAt, nil
+}
+
+// AddCreatedAt adds u to the "created_at" field.
+func (m *AppLangMutation) AddCreatedAt(u int32) {
+	if m.addcreated_at != nil {
+		*m.addcreated_at += u
+	} else {
+		m.addcreated_at = &u
+	}
+}
+
+// AddedCreatedAt returns the value that was added to the "created_at" field in this mutation.
+func (m *AppLangMutation) AddedCreatedAt() (r int32, exists bool) {
+	v := m.addcreated_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetCreatedAt resets all changes to the "created_at" field.
+func (m *AppLangMutation) ResetCreatedAt() {
+	m.created_at = nil
+	m.addcreated_at = nil
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (m *AppLangMutation) SetUpdatedAt(u uint32) {
+	m.updated_at = &u
+	m.addupdated_at = nil
+}
+
+// UpdatedAt returns the value of the "updated_at" field in the mutation.
+func (m *AppLangMutation) UpdatedAt() (r uint32, exists bool) {
+	v := m.updated_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpdatedAt returns the old "updated_at" field's value of the AppLang entity.
+// If the AppLang object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AppLangMutation) OldUpdatedAt(ctx context.Context) (v uint32, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUpdatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUpdatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpdatedAt: %w", err)
+	}
+	return oldValue.UpdatedAt, nil
+}
+
+// AddUpdatedAt adds u to the "updated_at" field.
+func (m *AppLangMutation) AddUpdatedAt(u int32) {
+	if m.addupdated_at != nil {
+		*m.addupdated_at += u
+	} else {
+		m.addupdated_at = &u
+	}
+}
+
+// AddedUpdatedAt returns the value that was added to the "updated_at" field in this mutation.
+func (m *AppLangMutation) AddedUpdatedAt() (r int32, exists bool) {
+	v := m.addupdated_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetUpdatedAt resets all changes to the "updated_at" field.
+func (m *AppLangMutation) ResetUpdatedAt() {
+	m.updated_at = nil
+	m.addupdated_at = nil
+}
+
+// SetDeletedAt sets the "deleted_at" field.
+func (m *AppLangMutation) SetDeletedAt(u uint32) {
+	m.deleted_at = &u
+	m.adddeleted_at = nil
+}
+
+// DeletedAt returns the value of the "deleted_at" field in the mutation.
+func (m *AppLangMutation) DeletedAt() (r uint32, exists bool) {
+	v := m.deleted_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDeletedAt returns the old "deleted_at" field's value of the AppLang entity.
+// If the AppLang object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AppLangMutation) OldDeletedAt(ctx context.Context) (v uint32, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDeletedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDeletedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDeletedAt: %w", err)
+	}
+	return oldValue.DeletedAt, nil
+}
+
+// AddDeletedAt adds u to the "deleted_at" field.
+func (m *AppLangMutation) AddDeletedAt(u int32) {
+	if m.adddeleted_at != nil {
+		*m.adddeleted_at += u
+	} else {
+		m.adddeleted_at = &u
+	}
+}
+
+// AddedDeletedAt returns the value that was added to the "deleted_at" field in this mutation.
+func (m *AppLangMutation) AddedDeletedAt() (r int32, exists bool) {
+	v := m.adddeleted_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetDeletedAt resets all changes to the "deleted_at" field.
+func (m *AppLangMutation) ResetDeletedAt() {
+	m.deleted_at = nil
+	m.adddeleted_at = nil
+}
+
+// SetAppID sets the "app_id" field.
+func (m *AppLangMutation) SetAppID(u uuid.UUID) {
+	m.app_id = &u
+}
+
+// AppID returns the value of the "app_id" field in the mutation.
+func (m *AppLangMutation) AppID() (r uuid.UUID, exists bool) {
+	v := m.app_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldAppID returns the old "app_id" field's value of the AppLang entity.
+// If the AppLang object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AppLangMutation) OldAppID(ctx context.Context) (v uuid.UUID, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldAppID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldAppID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldAppID: %w", err)
+	}
+	return oldValue.AppID, nil
+}
+
+// ClearAppID clears the value of the "app_id" field.
+func (m *AppLangMutation) ClearAppID() {
+	m.app_id = nil
+	m.clearedFields[applang.FieldAppID] = struct{}{}
+}
+
+// AppIDCleared returns if the "app_id" field was cleared in this mutation.
+func (m *AppLangMutation) AppIDCleared() bool {
+	_, ok := m.clearedFields[applang.FieldAppID]
+	return ok
+}
+
+// ResetAppID resets all changes to the "app_id" field.
+func (m *AppLangMutation) ResetAppID() {
+	m.app_id = nil
+	delete(m.clearedFields, applang.FieldAppID)
+}
+
+// SetLangID sets the "lang_id" field.
+func (m *AppLangMutation) SetLangID(u uuid.UUID) {
+	m.lang_id = &u
+}
+
+// LangID returns the value of the "lang_id" field in the mutation.
+func (m *AppLangMutation) LangID() (r uuid.UUID, exists bool) {
+	v := m.lang_id
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldLangID returns the old "lang_id" field's value of the AppLang entity.
+// If the AppLang object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AppLangMutation) OldLangID(ctx context.Context) (v uuid.UUID, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldLangID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldLangID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldLangID: %w", err)
+	}
+	return oldValue.LangID, nil
+}
+
+// ClearLangID clears the value of the "lang_id" field.
+func (m *AppLangMutation) ClearLangID() {
+	m.lang_id = nil
+	m.clearedFields[applang.FieldLangID] = struct{}{}
+}
+
+// LangIDCleared returns if the "lang_id" field was cleared in this mutation.
+func (m *AppLangMutation) LangIDCleared() bool {
+	_, ok := m.clearedFields[applang.FieldLangID]
+	return ok
+}
+
+// ResetLangID resets all changes to the "lang_id" field.
+func (m *AppLangMutation) ResetLangID() {
+	m.lang_id = nil
+	delete(m.clearedFields, applang.FieldLangID)
+}
+
+// SetMain sets the "main" field.
+func (m *AppLangMutation) SetMain(b bool) {
+	m.main = &b
+}
+
+// Main returns the value of the "main" field in the mutation.
+func (m *AppLangMutation) Main() (r bool, exists bool) {
+	v := m.main
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldMain returns the old "main" field's value of the AppLang entity.
+// If the AppLang object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AppLangMutation) OldMain(ctx context.Context) (v bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldMain is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldMain requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldMain: %w", err)
+	}
+	return oldValue.Main, nil
+}
+
+// ClearMain clears the value of the "main" field.
+func (m *AppLangMutation) ClearMain() {
+	m.main = nil
+	m.clearedFields[applang.FieldMain] = struct{}{}
+}
+
+// MainCleared returns if the "main" field was cleared in this mutation.
+func (m *AppLangMutation) MainCleared() bool {
+	_, ok := m.clearedFields[applang.FieldMain]
+	return ok
+}
+
+// ResetMain resets all changes to the "main" field.
+func (m *AppLangMutation) ResetMain() {
+	m.main = nil
+	delete(m.clearedFields, applang.FieldMain)
+}
+
+// Where appends a list predicates to the AppLangMutation builder.
+func (m *AppLangMutation) Where(ps ...predicate.AppLang) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// Op returns the operation name.
+func (m *AppLangMutation) Op() Op {
+	return m.op
+}
+
+// Type returns the node type of this mutation (AppLang).
+func (m *AppLangMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *AppLangMutation) Fields() []string {
+	fields := make([]string, 0, 6)
+	if m.created_at != nil {
+		fields = append(fields, applang.FieldCreatedAt)
+	}
+	if m.updated_at != nil {
+		fields = append(fields, applang.FieldUpdatedAt)
+	}
+	if m.deleted_at != nil {
+		fields = append(fields, applang.FieldDeletedAt)
+	}
+	if m.app_id != nil {
+		fields = append(fields, applang.FieldAppID)
+	}
+	if m.lang_id != nil {
+		fields = append(fields, applang.FieldLangID)
+	}
+	if m.main != nil {
+		fields = append(fields, applang.FieldMain)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *AppLangMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case applang.FieldCreatedAt:
+		return m.CreatedAt()
+	case applang.FieldUpdatedAt:
+		return m.UpdatedAt()
+	case applang.FieldDeletedAt:
+		return m.DeletedAt()
+	case applang.FieldAppID:
+		return m.AppID()
+	case applang.FieldLangID:
+		return m.LangID()
+	case applang.FieldMain:
+		return m.Main()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *AppLangMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case applang.FieldCreatedAt:
+		return m.OldCreatedAt(ctx)
+	case applang.FieldUpdatedAt:
+		return m.OldUpdatedAt(ctx)
+	case applang.FieldDeletedAt:
+		return m.OldDeletedAt(ctx)
+	case applang.FieldAppID:
+		return m.OldAppID(ctx)
+	case applang.FieldLangID:
+		return m.OldLangID(ctx)
+	case applang.FieldMain:
+		return m.OldMain(ctx)
+	}
+	return nil, fmt.Errorf("unknown AppLang field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *AppLangMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case applang.FieldCreatedAt:
+		v, ok := value.(uint32)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreatedAt(v)
+		return nil
+	case applang.FieldUpdatedAt:
+		v, ok := value.(uint32)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpdatedAt(v)
+		return nil
+	case applang.FieldDeletedAt:
+		v, ok := value.(uint32)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDeletedAt(v)
+		return nil
+	case applang.FieldAppID:
+		v, ok := value.(uuid.UUID)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetAppID(v)
+		return nil
+	case applang.FieldLangID:
+		v, ok := value.(uuid.UUID)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetLangID(v)
+		return nil
+	case applang.FieldMain:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetMain(v)
+		return nil
+	}
+	return fmt.Errorf("unknown AppLang field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *AppLangMutation) AddedFields() []string {
+	var fields []string
+	if m.addcreated_at != nil {
+		fields = append(fields, applang.FieldCreatedAt)
+	}
+	if m.addupdated_at != nil {
+		fields = append(fields, applang.FieldUpdatedAt)
+	}
+	if m.adddeleted_at != nil {
+		fields = append(fields, applang.FieldDeletedAt)
+	}
+	return fields
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *AppLangMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	case applang.FieldCreatedAt:
+		return m.AddedCreatedAt()
+	case applang.FieldUpdatedAt:
+		return m.AddedUpdatedAt()
+	case applang.FieldDeletedAt:
+		return m.AddedDeletedAt()
+	}
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *AppLangMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	case applang.FieldCreatedAt:
+		v, ok := value.(int32)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddCreatedAt(v)
+		return nil
+	case applang.FieldUpdatedAt:
+		v, ok := value.(int32)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddUpdatedAt(v)
+		return nil
+	case applang.FieldDeletedAt:
+		v, ok := value.(int32)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddDeletedAt(v)
+		return nil
+	}
+	return fmt.Errorf("unknown AppLang numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *AppLangMutation) ClearedFields() []string {
+	var fields []string
+	if m.FieldCleared(applang.FieldAppID) {
+		fields = append(fields, applang.FieldAppID)
+	}
+	if m.FieldCleared(applang.FieldLangID) {
+		fields = append(fields, applang.FieldLangID)
+	}
+	if m.FieldCleared(applang.FieldMain) {
+		fields = append(fields, applang.FieldMain)
+	}
+	return fields
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *AppLangMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *AppLangMutation) ClearField(name string) error {
+	switch name {
+	case applang.FieldAppID:
+		m.ClearAppID()
+		return nil
+	case applang.FieldLangID:
+		m.ClearLangID()
+		return nil
+	case applang.FieldMain:
+		m.ClearMain()
+		return nil
+	}
+	return fmt.Errorf("unknown AppLang nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *AppLangMutation) ResetField(name string) error {
+	switch name {
+	case applang.FieldCreatedAt:
+		m.ResetCreatedAt()
+		return nil
+	case applang.FieldUpdatedAt:
+		m.ResetUpdatedAt()
+		return nil
+	case applang.FieldDeletedAt:
+		m.ResetDeletedAt()
+		return nil
+	case applang.FieldAppID:
+		m.ResetAppID()
+		return nil
+	case applang.FieldLangID:
+		m.ResetLangID()
+		return nil
+	case applang.FieldMain:
+		m.ResetMain()
+		return nil
+	}
+	return fmt.Errorf("unknown AppLang field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *AppLangMutation) AddedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *AppLangMutation) AddedIDs(name string) []ent.Value {
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *AppLangMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *AppLangMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *AppLangMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *AppLangMutation) EdgeCleared(name string) bool {
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *AppLangMutation) ClearEdge(name string) error {
+	return fmt.Errorf("unknown AppLang unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *AppLangMutation) ResetEdge(name string) error {
+	return fmt.Errorf("unknown AppLang edge %s", name)
+}
 
 // CountryMutation represents an operation that mutates the Country nodes in the graph.
 type CountryMutation struct {

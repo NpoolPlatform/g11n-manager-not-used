@@ -3,6 +3,8 @@
 package ent
 
 import (
+	"github.com/NpoolPlatform/g11n-manager/pkg/db/ent/appcountry"
+	"github.com/NpoolPlatform/g11n-manager/pkg/db/ent/applang"
 	"github.com/NpoolPlatform/g11n-manager/pkg/db/ent/country"
 	"github.com/NpoolPlatform/g11n-manager/pkg/db/ent/lang"
 	"github.com/NpoolPlatform/g11n-manager/pkg/db/ent/message"
@@ -15,8 +17,45 @@ import (
 
 // schemaGraph holds a representation of ent/schema at runtime.
 var schemaGraph = func() *sqlgraph.Schema {
-	graph := &sqlgraph.Schema{Nodes: make([]*sqlgraph.Node, 3)}
+	graph := &sqlgraph.Schema{Nodes: make([]*sqlgraph.Node, 5)}
 	graph.Nodes[0] = &sqlgraph.Node{
+		NodeSpec: sqlgraph.NodeSpec{
+			Table:   appcountry.Table,
+			Columns: appcountry.Columns,
+			ID: &sqlgraph.FieldSpec{
+				Type:   field.TypeUUID,
+				Column: appcountry.FieldID,
+			},
+		},
+		Type: "AppCountry",
+		Fields: map[string]*sqlgraph.FieldSpec{
+			appcountry.FieldCreatedAt: {Type: field.TypeUint32, Column: appcountry.FieldCreatedAt},
+			appcountry.FieldUpdatedAt: {Type: field.TypeUint32, Column: appcountry.FieldUpdatedAt},
+			appcountry.FieldDeletedAt: {Type: field.TypeUint32, Column: appcountry.FieldDeletedAt},
+			appcountry.FieldAppID:     {Type: field.TypeUUID, Column: appcountry.FieldAppID},
+			appcountry.FieldCountryID: {Type: field.TypeUUID, Column: appcountry.FieldCountryID},
+		},
+	}
+	graph.Nodes[1] = &sqlgraph.Node{
+		NodeSpec: sqlgraph.NodeSpec{
+			Table:   applang.Table,
+			Columns: applang.Columns,
+			ID: &sqlgraph.FieldSpec{
+				Type:   field.TypeUUID,
+				Column: applang.FieldID,
+			},
+		},
+		Type: "AppLang",
+		Fields: map[string]*sqlgraph.FieldSpec{
+			applang.FieldCreatedAt: {Type: field.TypeUint32, Column: applang.FieldCreatedAt},
+			applang.FieldUpdatedAt: {Type: field.TypeUint32, Column: applang.FieldUpdatedAt},
+			applang.FieldDeletedAt: {Type: field.TypeUint32, Column: applang.FieldDeletedAt},
+			applang.FieldAppID:     {Type: field.TypeUUID, Column: applang.FieldAppID},
+			applang.FieldLangID:    {Type: field.TypeUUID, Column: applang.FieldLangID},
+			applang.FieldMain:      {Type: field.TypeBool, Column: applang.FieldMain},
+		},
+	}
+	graph.Nodes[2] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   country.Table,
 			Columns: country.Columns,
@@ -36,7 +75,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			country.FieldShort:     {Type: field.TypeString, Column: country.FieldShort},
 		},
 	}
-	graph.Nodes[1] = &sqlgraph.Node{
+	graph.Nodes[3] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   lang.Table,
 			Columns: lang.Columns,
@@ -56,7 +95,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			lang.FieldShort:     {Type: field.TypeString, Column: lang.FieldShort},
 		},
 	}
-	graph.Nodes[2] = &sqlgraph.Node{
+	graph.Nodes[4] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   message.Table,
 			Columns: message.Columns,
@@ -89,6 +128,141 @@ type predicateAdder interface {
 }
 
 // addPredicate implements the predicateAdder interface.
+func (acq *AppCountryQuery) addPredicate(pred func(s *sql.Selector)) {
+	acq.predicates = append(acq.predicates, pred)
+}
+
+// Filter returns a Filter implementation to apply filters on the AppCountryQuery builder.
+func (acq *AppCountryQuery) Filter() *AppCountryFilter {
+	return &AppCountryFilter{config: acq.config, predicateAdder: acq}
+}
+
+// addPredicate implements the predicateAdder interface.
+func (m *AppCountryMutation) addPredicate(pred func(s *sql.Selector)) {
+	m.predicates = append(m.predicates, pred)
+}
+
+// Filter returns an entql.Where implementation to apply filters on the AppCountryMutation builder.
+func (m *AppCountryMutation) Filter() *AppCountryFilter {
+	return &AppCountryFilter{config: m.config, predicateAdder: m}
+}
+
+// AppCountryFilter provides a generic filtering capability at runtime for AppCountryQuery.
+type AppCountryFilter struct {
+	predicateAdder
+	config
+}
+
+// Where applies the entql predicate on the query filter.
+func (f *AppCountryFilter) Where(p entql.P) {
+	f.addPredicate(func(s *sql.Selector) {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[0].Type, p, s); err != nil {
+			s.AddError(err)
+		}
+	})
+}
+
+// WhereID applies the entql [16]byte predicate on the id field.
+func (f *AppCountryFilter) WhereID(p entql.ValueP) {
+	f.Where(p.Field(appcountry.FieldID))
+}
+
+// WhereCreatedAt applies the entql uint32 predicate on the created_at field.
+func (f *AppCountryFilter) WhereCreatedAt(p entql.Uint32P) {
+	f.Where(p.Field(appcountry.FieldCreatedAt))
+}
+
+// WhereUpdatedAt applies the entql uint32 predicate on the updated_at field.
+func (f *AppCountryFilter) WhereUpdatedAt(p entql.Uint32P) {
+	f.Where(p.Field(appcountry.FieldUpdatedAt))
+}
+
+// WhereDeletedAt applies the entql uint32 predicate on the deleted_at field.
+func (f *AppCountryFilter) WhereDeletedAt(p entql.Uint32P) {
+	f.Where(p.Field(appcountry.FieldDeletedAt))
+}
+
+// WhereAppID applies the entql [16]byte predicate on the app_id field.
+func (f *AppCountryFilter) WhereAppID(p entql.ValueP) {
+	f.Where(p.Field(appcountry.FieldAppID))
+}
+
+// WhereCountryID applies the entql [16]byte predicate on the country_id field.
+func (f *AppCountryFilter) WhereCountryID(p entql.ValueP) {
+	f.Where(p.Field(appcountry.FieldCountryID))
+}
+
+// addPredicate implements the predicateAdder interface.
+func (alq *AppLangQuery) addPredicate(pred func(s *sql.Selector)) {
+	alq.predicates = append(alq.predicates, pred)
+}
+
+// Filter returns a Filter implementation to apply filters on the AppLangQuery builder.
+func (alq *AppLangQuery) Filter() *AppLangFilter {
+	return &AppLangFilter{config: alq.config, predicateAdder: alq}
+}
+
+// addPredicate implements the predicateAdder interface.
+func (m *AppLangMutation) addPredicate(pred func(s *sql.Selector)) {
+	m.predicates = append(m.predicates, pred)
+}
+
+// Filter returns an entql.Where implementation to apply filters on the AppLangMutation builder.
+func (m *AppLangMutation) Filter() *AppLangFilter {
+	return &AppLangFilter{config: m.config, predicateAdder: m}
+}
+
+// AppLangFilter provides a generic filtering capability at runtime for AppLangQuery.
+type AppLangFilter struct {
+	predicateAdder
+	config
+}
+
+// Where applies the entql predicate on the query filter.
+func (f *AppLangFilter) Where(p entql.P) {
+	f.addPredicate(func(s *sql.Selector) {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[1].Type, p, s); err != nil {
+			s.AddError(err)
+		}
+	})
+}
+
+// WhereID applies the entql [16]byte predicate on the id field.
+func (f *AppLangFilter) WhereID(p entql.ValueP) {
+	f.Where(p.Field(applang.FieldID))
+}
+
+// WhereCreatedAt applies the entql uint32 predicate on the created_at field.
+func (f *AppLangFilter) WhereCreatedAt(p entql.Uint32P) {
+	f.Where(p.Field(applang.FieldCreatedAt))
+}
+
+// WhereUpdatedAt applies the entql uint32 predicate on the updated_at field.
+func (f *AppLangFilter) WhereUpdatedAt(p entql.Uint32P) {
+	f.Where(p.Field(applang.FieldUpdatedAt))
+}
+
+// WhereDeletedAt applies the entql uint32 predicate on the deleted_at field.
+func (f *AppLangFilter) WhereDeletedAt(p entql.Uint32P) {
+	f.Where(p.Field(applang.FieldDeletedAt))
+}
+
+// WhereAppID applies the entql [16]byte predicate on the app_id field.
+func (f *AppLangFilter) WhereAppID(p entql.ValueP) {
+	f.Where(p.Field(applang.FieldAppID))
+}
+
+// WhereLangID applies the entql [16]byte predicate on the lang_id field.
+func (f *AppLangFilter) WhereLangID(p entql.ValueP) {
+	f.Where(p.Field(applang.FieldLangID))
+}
+
+// WhereMain applies the entql bool predicate on the main field.
+func (f *AppLangFilter) WhereMain(p entql.BoolP) {
+	f.Where(p.Field(applang.FieldMain))
+}
+
+// addPredicate implements the predicateAdder interface.
 func (cq *CountryQuery) addPredicate(pred func(s *sql.Selector)) {
 	cq.predicates = append(cq.predicates, pred)
 }
@@ -117,7 +291,7 @@ type CountryFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *CountryFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[0].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[2].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -192,7 +366,7 @@ type LangFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *LangFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[1].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[3].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
@@ -267,7 +441,7 @@ type MessageFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *MessageFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[2].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[4].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})

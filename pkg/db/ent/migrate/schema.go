@@ -8,6 +8,37 @@ import (
 )
 
 var (
+	// AppCountriesColumns holds the columns for the "app_countries" table.
+	AppCountriesColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID, Unique: true},
+		{Name: "created_at", Type: field.TypeUint32},
+		{Name: "updated_at", Type: field.TypeUint32},
+		{Name: "deleted_at", Type: field.TypeUint32},
+		{Name: "app_id", Type: field.TypeUUID, Nullable: true},
+		{Name: "country_id", Type: field.TypeUUID, Nullable: true},
+	}
+	// AppCountriesTable holds the schema information for the "app_countries" table.
+	AppCountriesTable = &schema.Table{
+		Name:       "app_countries",
+		Columns:    AppCountriesColumns,
+		PrimaryKey: []*schema.Column{AppCountriesColumns[0]},
+	}
+	// AppLangsColumns holds the columns for the "app_langs" table.
+	AppLangsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID, Unique: true},
+		{Name: "created_at", Type: field.TypeUint32},
+		{Name: "updated_at", Type: field.TypeUint32},
+		{Name: "deleted_at", Type: field.TypeUint32},
+		{Name: "app_id", Type: field.TypeUUID, Nullable: true},
+		{Name: "lang_id", Type: field.TypeUUID, Nullable: true},
+		{Name: "main", Type: field.TypeBool, Nullable: true, Default: false},
+	}
+	// AppLangsTable holds the schema information for the "app_langs" table.
+	AppLangsTable = &schema.Table{
+		Name:       "app_langs",
+		Columns:    AppLangsColumns,
+		PrimaryKey: []*schema.Column{AppLangsColumns[0]},
+	}
 	// CountriesColumns holds the columns for the "countries" table.
 	CountriesColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID, Unique: true},
@@ -64,6 +95,8 @@ var (
 	}
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
+		AppCountriesTable,
+		AppLangsTable,
 		CountriesTable,
 		LangsTable,
 		MessagesTable,

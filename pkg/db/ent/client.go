@@ -11,6 +11,8 @@ import (
 	"github.com/NpoolPlatform/g11n-manager/pkg/db/ent/migrate"
 	"github.com/google/uuid"
 
+	"github.com/NpoolPlatform/g11n-manager/pkg/db/ent/appcountry"
+	"github.com/NpoolPlatform/g11n-manager/pkg/db/ent/applang"
 	"github.com/NpoolPlatform/g11n-manager/pkg/db/ent/country"
 	"github.com/NpoolPlatform/g11n-manager/pkg/db/ent/lang"
 	"github.com/NpoolPlatform/g11n-manager/pkg/db/ent/message"
@@ -24,6 +26,10 @@ type Client struct {
 	config
 	// Schema is the client for creating, migrating and dropping schema.
 	Schema *migrate.Schema
+	// AppCountry is the client for interacting with the AppCountry builders.
+	AppCountry *AppCountryClient
+	// AppLang is the client for interacting with the AppLang builders.
+	AppLang *AppLangClient
 	// Country is the client for interacting with the Country builders.
 	Country *CountryClient
 	// Lang is the client for interacting with the Lang builders.
@@ -43,6 +49,8 @@ func NewClient(opts ...Option) *Client {
 
 func (c *Client) init() {
 	c.Schema = migrate.NewSchema(c.driver)
+	c.AppCountry = NewAppCountryClient(c.config)
+	c.AppLang = NewAppLangClient(c.config)
 	c.Country = NewCountryClient(c.config)
 	c.Lang = NewLangClient(c.config)
 	c.Message = NewMessageClient(c.config)
@@ -77,11 +85,13 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 	cfg := c.config
 	cfg.driver = tx
 	return &Tx{
-		ctx:     ctx,
-		config:  cfg,
-		Country: NewCountryClient(cfg),
-		Lang:    NewLangClient(cfg),
-		Message: NewMessageClient(cfg),
+		ctx:        ctx,
+		config:     cfg,
+		AppCountry: NewAppCountryClient(cfg),
+		AppLang:    NewAppLangClient(cfg),
+		Country:    NewCountryClient(cfg),
+		Lang:       NewLangClient(cfg),
+		Message:    NewMessageClient(cfg),
 	}, nil
 }
 
@@ -99,18 +109,20 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 	cfg := c.config
 	cfg.driver = &txDriver{tx: tx, drv: c.driver}
 	return &Tx{
-		ctx:     ctx,
-		config:  cfg,
-		Country: NewCountryClient(cfg),
-		Lang:    NewLangClient(cfg),
-		Message: NewMessageClient(cfg),
+		ctx:        ctx,
+		config:     cfg,
+		AppCountry: NewAppCountryClient(cfg),
+		AppLang:    NewAppLangClient(cfg),
+		Country:    NewCountryClient(cfg),
+		Lang:       NewLangClient(cfg),
+		Message:    NewMessageClient(cfg),
 	}, nil
 }
 
 // Debug returns a new debug-client. It's used to get verbose logging on specific operations.
 //
 //	client.Debug().
-//		Country.
+//		AppCountry.
 //		Query().
 //		Count(ctx)
 //
@@ -133,9 +145,193 @@ func (c *Client) Close() error {
 // Use adds the mutation hooks to all the entity clients.
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
+	c.AppCountry.Use(hooks...)
+	c.AppLang.Use(hooks...)
 	c.Country.Use(hooks...)
 	c.Lang.Use(hooks...)
 	c.Message.Use(hooks...)
+}
+
+// AppCountryClient is a client for the AppCountry schema.
+type AppCountryClient struct {
+	config
+}
+
+// NewAppCountryClient returns a client for the AppCountry from the given config.
+func NewAppCountryClient(c config) *AppCountryClient {
+	return &AppCountryClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `appcountry.Hooks(f(g(h())))`.
+func (c *AppCountryClient) Use(hooks ...Hook) {
+	c.hooks.AppCountry = append(c.hooks.AppCountry, hooks...)
+}
+
+// Create returns a builder for creating a AppCountry entity.
+func (c *AppCountryClient) Create() *AppCountryCreate {
+	mutation := newAppCountryMutation(c.config, OpCreate)
+	return &AppCountryCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of AppCountry entities.
+func (c *AppCountryClient) CreateBulk(builders ...*AppCountryCreate) *AppCountryCreateBulk {
+	return &AppCountryCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for AppCountry.
+func (c *AppCountryClient) Update() *AppCountryUpdate {
+	mutation := newAppCountryMutation(c.config, OpUpdate)
+	return &AppCountryUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *AppCountryClient) UpdateOne(ac *AppCountry) *AppCountryUpdateOne {
+	mutation := newAppCountryMutation(c.config, OpUpdateOne, withAppCountry(ac))
+	return &AppCountryUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *AppCountryClient) UpdateOneID(id uuid.UUID) *AppCountryUpdateOne {
+	mutation := newAppCountryMutation(c.config, OpUpdateOne, withAppCountryID(id))
+	return &AppCountryUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for AppCountry.
+func (c *AppCountryClient) Delete() *AppCountryDelete {
+	mutation := newAppCountryMutation(c.config, OpDelete)
+	return &AppCountryDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *AppCountryClient) DeleteOne(ac *AppCountry) *AppCountryDeleteOne {
+	return c.DeleteOneID(ac.ID)
+}
+
+// DeleteOne returns a builder for deleting the given entity by its id.
+func (c *AppCountryClient) DeleteOneID(id uuid.UUID) *AppCountryDeleteOne {
+	builder := c.Delete().Where(appcountry.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &AppCountryDeleteOne{builder}
+}
+
+// Query returns a query builder for AppCountry.
+func (c *AppCountryClient) Query() *AppCountryQuery {
+	return &AppCountryQuery{
+		config: c.config,
+	}
+}
+
+// Get returns a AppCountry entity by its id.
+func (c *AppCountryClient) Get(ctx context.Context, id uuid.UUID) (*AppCountry, error) {
+	return c.Query().Where(appcountry.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *AppCountryClient) GetX(ctx context.Context, id uuid.UUID) *AppCountry {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *AppCountryClient) Hooks() []Hook {
+	hooks := c.hooks.AppCountry
+	return append(hooks[:len(hooks):len(hooks)], appcountry.Hooks[:]...)
+}
+
+// AppLangClient is a client for the AppLang schema.
+type AppLangClient struct {
+	config
+}
+
+// NewAppLangClient returns a client for the AppLang from the given config.
+func NewAppLangClient(c config) *AppLangClient {
+	return &AppLangClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `applang.Hooks(f(g(h())))`.
+func (c *AppLangClient) Use(hooks ...Hook) {
+	c.hooks.AppLang = append(c.hooks.AppLang, hooks...)
+}
+
+// Create returns a builder for creating a AppLang entity.
+func (c *AppLangClient) Create() *AppLangCreate {
+	mutation := newAppLangMutation(c.config, OpCreate)
+	return &AppLangCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of AppLang entities.
+func (c *AppLangClient) CreateBulk(builders ...*AppLangCreate) *AppLangCreateBulk {
+	return &AppLangCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for AppLang.
+func (c *AppLangClient) Update() *AppLangUpdate {
+	mutation := newAppLangMutation(c.config, OpUpdate)
+	return &AppLangUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *AppLangClient) UpdateOne(al *AppLang) *AppLangUpdateOne {
+	mutation := newAppLangMutation(c.config, OpUpdateOne, withAppLang(al))
+	return &AppLangUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *AppLangClient) UpdateOneID(id uuid.UUID) *AppLangUpdateOne {
+	mutation := newAppLangMutation(c.config, OpUpdateOne, withAppLangID(id))
+	return &AppLangUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for AppLang.
+func (c *AppLangClient) Delete() *AppLangDelete {
+	mutation := newAppLangMutation(c.config, OpDelete)
+	return &AppLangDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *AppLangClient) DeleteOne(al *AppLang) *AppLangDeleteOne {
+	return c.DeleteOneID(al.ID)
+}
+
+// DeleteOne returns a builder for deleting the given entity by its id.
+func (c *AppLangClient) DeleteOneID(id uuid.UUID) *AppLangDeleteOne {
+	builder := c.Delete().Where(applang.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &AppLangDeleteOne{builder}
+}
+
+// Query returns a query builder for AppLang.
+func (c *AppLangClient) Query() *AppLangQuery {
+	return &AppLangQuery{
+		config: c.config,
+	}
+}
+
+// Get returns a AppLang entity by its id.
+func (c *AppLangClient) Get(ctx context.Context, id uuid.UUID) (*AppLang, error) {
+	return c.Query().Where(applang.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *AppLangClient) GetX(ctx context.Context, id uuid.UUID) *AppLang {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *AppLangClient) Hooks() []Hook {
+	hooks := c.hooks.AppLang
+	return append(hooks[:len(hooks):len(hooks)], applang.Hooks[:]...)
 }
 
 // CountryClient is a client for the Country schema.
