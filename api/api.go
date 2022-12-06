@@ -3,33 +3,28 @@ package api
 import (
 	"context"
 
-	"github.com/NpoolPlatform/message/npool/servicetmpl"
+	g11n "github.com/NpoolPlatform/message/npool/g11n/mgr/v1"
 
-	"github.com/NpoolPlatform/service-template/api/detail"
-	"github.com/NpoolPlatform/service-template/api/general"
+	"github.com/NpoolPlatform/g11n-manager/api/country"
 
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"google.golang.org/grpc"
 )
 
 type Server struct {
-	servicetmpl.UnimplementedManagerServer
+	g11n.UnimplementedManagerServer
 }
 
 func Register(server grpc.ServiceRegistrar) {
-	servicetmpl.RegisterManagerServer(server, &Server{})
-	general.Register(server)
-	detail.Register(server)
+	g11n.RegisterManagerServer(server, &Server{})
+	country.Register(server)
 }
 
 func RegisterGateway(mux *runtime.ServeMux, endpoint string, opts []grpc.DialOption) error {
-	if err := servicetmpl.RegisterManagerHandlerFromEndpoint(context.Background(), mux, endpoint, opts); err != nil {
+	if err := g11b.RegisterManagerHandlerFromEndpoint(context.Background(), mux, endpoint, opts); err != nil {
 		return err
 	}
-	if err := general.RegisterGateway(mux, endpoint, opts); err != nil {
-		return err
-	}
-	if err := detail.RegisterGateway(mux, endpoint, opts); err != nil {
+	if err := country.RegisterGateway(mux, endpoint, opts); err != nil {
 		return err
 	}
 	return nil
