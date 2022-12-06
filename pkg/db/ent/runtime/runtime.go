@@ -6,6 +6,7 @@ import (
 	"context"
 
 	"github.com/NpoolPlatform/g11n-manager/pkg/db/ent/country"
+	"github.com/NpoolPlatform/g11n-manager/pkg/db/ent/lang"
 	"github.com/NpoolPlatform/g11n-manager/pkg/db/ent/schema"
 	"github.com/google/uuid"
 
@@ -65,6 +66,54 @@ func init() {
 	countryDescID := countryFields[0].Descriptor()
 	// country.DefaultID holds the default value on creation for the id field.
 	country.DefaultID = countryDescID.Default.(func() uuid.UUID)
+	langMixin := schema.Lang{}.Mixin()
+	lang.Policy = privacy.NewPolicies(langMixin[0], schema.Lang{})
+	lang.Hooks[0] = func(next ent.Mutator) ent.Mutator {
+		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+			if err := lang.Policy.EvalMutation(ctx, m); err != nil {
+				return nil, err
+			}
+			return next.Mutate(ctx, m)
+		})
+	}
+	langMixinFields0 := langMixin[0].Fields()
+	_ = langMixinFields0
+	langFields := schema.Lang{}.Fields()
+	_ = langFields
+	// langDescCreatedAt is the schema descriptor for created_at field.
+	langDescCreatedAt := langMixinFields0[0].Descriptor()
+	// lang.DefaultCreatedAt holds the default value on creation for the created_at field.
+	lang.DefaultCreatedAt = langDescCreatedAt.Default.(func() uint32)
+	// langDescUpdatedAt is the schema descriptor for updated_at field.
+	langDescUpdatedAt := langMixinFields0[1].Descriptor()
+	// lang.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	lang.DefaultUpdatedAt = langDescUpdatedAt.Default.(func() uint32)
+	// lang.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	lang.UpdateDefaultUpdatedAt = langDescUpdatedAt.UpdateDefault.(func() uint32)
+	// langDescDeletedAt is the schema descriptor for deleted_at field.
+	langDescDeletedAt := langMixinFields0[2].Descriptor()
+	// lang.DefaultDeletedAt holds the default value on creation for the deleted_at field.
+	lang.DefaultDeletedAt = langDescDeletedAt.Default.(func() uint32)
+	// langDescLang is the schema descriptor for lang field.
+	langDescLang := langFields[1].Descriptor()
+	// lang.DefaultLang holds the default value on creation for the lang field.
+	lang.DefaultLang = langDescLang.Default.(string)
+	// langDescLogo is the schema descriptor for logo field.
+	langDescLogo := langFields[2].Descriptor()
+	// lang.DefaultLogo holds the default value on creation for the logo field.
+	lang.DefaultLogo = langDescLogo.Default.(string)
+	// langDescName is the schema descriptor for name field.
+	langDescName := langFields[3].Descriptor()
+	// lang.DefaultName holds the default value on creation for the name field.
+	lang.DefaultName = langDescName.Default.(string)
+	// langDescShort is the schema descriptor for short field.
+	langDescShort := langFields[4].Descriptor()
+	// lang.DefaultShort holds the default value on creation for the short field.
+	lang.DefaultShort = langDescShort.Default.(string)
+	// langDescID is the schema descriptor for id field.
+	langDescID := langFields[0].Descriptor()
+	// lang.DefaultID holds the default value on creation for the id field.
+	lang.DefaultID = langDescID.Default.(func() uuid.UUID)
 }
 
 const (

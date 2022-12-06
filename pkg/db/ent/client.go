@@ -12,6 +12,7 @@ import (
 	"github.com/google/uuid"
 
 	"github.com/NpoolPlatform/g11n-manager/pkg/db/ent/country"
+	"github.com/NpoolPlatform/g11n-manager/pkg/db/ent/lang"
 
 	"entgo.io/ent/dialect"
 	"entgo.io/ent/dialect/sql"
@@ -24,6 +25,8 @@ type Client struct {
 	Schema *migrate.Schema
 	// Country is the client for interacting with the Country builders.
 	Country *CountryClient
+	// Lang is the client for interacting with the Lang builders.
+	Lang *LangClient
 }
 
 // NewClient creates a new client configured with the given options.
@@ -38,6 +41,7 @@ func NewClient(opts ...Option) *Client {
 func (c *Client) init() {
 	c.Schema = migrate.NewSchema(c.driver)
 	c.Country = NewCountryClient(c.config)
+	c.Lang = NewLangClient(c.config)
 }
 
 // Open opens a database/sql.DB specified by the driver name and
@@ -72,6 +76,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		ctx:     ctx,
 		config:  cfg,
 		Country: NewCountryClient(cfg),
+		Lang:    NewLangClient(cfg),
 	}, nil
 }
 
@@ -92,6 +97,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		ctx:     ctx,
 		config:  cfg,
 		Country: NewCountryClient(cfg),
+		Lang:    NewLangClient(cfg),
 	}, nil
 }
 
@@ -122,6 +128,7 @@ func (c *Client) Close() error {
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
 	c.Country.Use(hooks...)
+	c.Lang.Use(hooks...)
 }
 
 // CountryClient is a client for the Country schema.
@@ -213,4 +220,95 @@ func (c *CountryClient) GetX(ctx context.Context, id uuid.UUID) *Country {
 func (c *CountryClient) Hooks() []Hook {
 	hooks := c.hooks.Country
 	return append(hooks[:len(hooks):len(hooks)], country.Hooks[:]...)
+}
+
+// LangClient is a client for the Lang schema.
+type LangClient struct {
+	config
+}
+
+// NewLangClient returns a client for the Lang from the given config.
+func NewLangClient(c config) *LangClient {
+	return &LangClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `lang.Hooks(f(g(h())))`.
+func (c *LangClient) Use(hooks ...Hook) {
+	c.hooks.Lang = append(c.hooks.Lang, hooks...)
+}
+
+// Create returns a builder for creating a Lang entity.
+func (c *LangClient) Create() *LangCreate {
+	mutation := newLangMutation(c.config, OpCreate)
+	return &LangCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of Lang entities.
+func (c *LangClient) CreateBulk(builders ...*LangCreate) *LangCreateBulk {
+	return &LangCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for Lang.
+func (c *LangClient) Update() *LangUpdate {
+	mutation := newLangMutation(c.config, OpUpdate)
+	return &LangUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *LangClient) UpdateOne(l *Lang) *LangUpdateOne {
+	mutation := newLangMutation(c.config, OpUpdateOne, withLang(l))
+	return &LangUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *LangClient) UpdateOneID(id uuid.UUID) *LangUpdateOne {
+	mutation := newLangMutation(c.config, OpUpdateOne, withLangID(id))
+	return &LangUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for Lang.
+func (c *LangClient) Delete() *LangDelete {
+	mutation := newLangMutation(c.config, OpDelete)
+	return &LangDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *LangClient) DeleteOne(l *Lang) *LangDeleteOne {
+	return c.DeleteOneID(l.ID)
+}
+
+// DeleteOne returns a builder for deleting the given entity by its id.
+func (c *LangClient) DeleteOneID(id uuid.UUID) *LangDeleteOne {
+	builder := c.Delete().Where(lang.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &LangDeleteOne{builder}
+}
+
+// Query returns a query builder for Lang.
+func (c *LangClient) Query() *LangQuery {
+	return &LangQuery{
+		config: c.config,
+	}
+}
+
+// Get returns a Lang entity by its id.
+func (c *LangClient) Get(ctx context.Context, id uuid.UUID) (*Lang, error) {
+	return c.Query().Where(lang.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *LangClient) GetX(ctx context.Context, id uuid.UUID) *Lang {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *LangClient) Hooks() []Hook {
+	hooks := c.hooks.Lang
+	return append(hooks[:len(hooks):len(hooks)], lang.Hooks[:]...)
 }

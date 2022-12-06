@@ -16,6 +16,8 @@ type Tx struct {
 	config
 	// Country is the client for interacting with the Country builders.
 	Country *CountryClient
+	// Lang is the client for interacting with the Lang builders.
+	Lang *LangClient
 
 	// lazily loaded.
 	client     *Client
@@ -152,6 +154,7 @@ func (tx *Tx) Client() *Client {
 
 func (tx *Tx) init() {
 	tx.Country = NewCountryClient(tx.config)
+	tx.Lang = NewLangClient(tx.config)
 }
 
 // txDriver wraps the given dialect.Tx with a nop dialect.Driver implementation.

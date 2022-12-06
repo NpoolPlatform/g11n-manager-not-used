@@ -25,9 +25,27 @@ var (
 		Columns:    CountriesColumns,
 		PrimaryKey: []*schema.Column{CountriesColumns[0]},
 	}
+	// LangsColumns holds the columns for the "langs" table.
+	LangsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID, Unique: true},
+		{Name: "created_at", Type: field.TypeUint32},
+		{Name: "updated_at", Type: field.TypeUint32},
+		{Name: "deleted_at", Type: field.TypeUint32},
+		{Name: "lang", Type: field.TypeString, Nullable: true, Default: ""},
+		{Name: "logo", Type: field.TypeString, Nullable: true, Default: ""},
+		{Name: "name", Type: field.TypeString, Nullable: true, Default: ""},
+		{Name: "short", Type: field.TypeString, Nullable: true, Default: ""},
+	}
+	// LangsTable holds the schema information for the "langs" table.
+	LangsTable = &schema.Table{
+		Name:       "langs",
+		Columns:    LangsColumns,
+		PrimaryKey: []*schema.Column{LangsColumns[0]},
+	}
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
 		CountriesTable,
+		LangsTable,
 	}
 )
 

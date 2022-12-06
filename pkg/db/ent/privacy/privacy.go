@@ -174,6 +174,30 @@ func (f CountryMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutatio
 	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.CountryMutation", m)
 }
 
+// The LangQueryRuleFunc type is an adapter to allow the use of ordinary
+// functions as a query rule.
+type LangQueryRuleFunc func(context.Context, *ent.LangQuery) error
+
+// EvalQuery return f(ctx, q).
+func (f LangQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.LangQuery); ok {
+		return f(ctx, q)
+	}
+	return Denyf("ent/privacy: unexpected query type %T, expect *ent.LangQuery", q)
+}
+
+// The LangMutationRuleFunc type is an adapter to allow the use of ordinary
+// functions as a mutation rule.
+type LangMutationRuleFunc func(context.Context, *ent.LangMutation) error
+
+// EvalMutation calls f(ctx, m).
+func (f LangMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
+	if m, ok := m.(*ent.LangMutation); ok {
+		return f(ctx, m)
+	}
+	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.LangMutation", m)
+}
+
 type (
 	// Filter is the interface that wraps the Where function
 	// for filtering nodes in queries and mutations.
@@ -211,6 +235,8 @@ func queryFilter(q ent.Query) (Filter, error) {
 	switch q := q.(type) {
 	case *ent.CountryQuery:
 		return q.Filter(), nil
+	case *ent.LangQuery:
+		return q.Filter(), nil
 	default:
 		return nil, Denyf("ent/privacy: unexpected query type %T for query filter", q)
 	}
@@ -219,6 +245,8 @@ func queryFilter(q ent.Query) (Filter, error) {
 func mutationFilter(m ent.Mutation) (Filter, error) {
 	switch m := m.(type) {
 	case *ent.CountryMutation:
+		return m.Filter(), nil
+	case *ent.LangMutation:
 		return m.Filter(), nil
 	default:
 		return nil, Denyf("ent/privacy: unexpected mutation type %T for mutation filter", m)

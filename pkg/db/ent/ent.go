@@ -11,6 +11,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/NpoolPlatform/g11n-manager/pkg/db/ent/country"
+	"github.com/NpoolPlatform/g11n-manager/pkg/db/ent/lang"
 )
 
 // ent aliases to avoid import conflicts in user's code.
@@ -32,6 +33,7 @@ type OrderFunc func(*sql.Selector)
 func columnChecker(table string) func(string) error {
 	checks := map[string]func(string) bool{
 		country.Table: country.ValidColumn,
+		lang.Table:    lang.ValidColumn,
 	}
 	check, ok := checks[table]
 	if !ok {

@@ -22,6 +22,19 @@ func (f CountryFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, err
 	return f(ctx, mv)
 }
 
+// The LangFunc type is an adapter to allow the use of ordinary
+// function as Lang mutator.
+type LangFunc func(context.Context, *ent.LangMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f LangFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	mv, ok := m.(*ent.LangMutation)
+	if !ok {
+		return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.LangMutation", m)
+	}
+	return f(ctx, mv)
+}
+
 // Condition is a hook condition function.
 type Condition func(context.Context, ent.Mutation) bool
 

@@ -29,6 +29,7 @@ type config struct {
 // hooks per client, for fast access.
 type hooks struct {
 	Country []ent.Hook
+	Lang    []ent.Hook
 }
 
 // Options applies the options on the config object.

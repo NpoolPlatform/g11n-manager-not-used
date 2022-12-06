@@ -4,6 +4,7 @@ package ent
 
 import (
 	"github.com/NpoolPlatform/g11n-manager/pkg/db/ent/country"
+	"github.com/NpoolPlatform/g11n-manager/pkg/db/ent/lang"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
@@ -13,7 +14,7 @@ import (
 
 // schemaGraph holds a representation of ent/schema at runtime.
 var schemaGraph = func() *sqlgraph.Schema {
-	graph := &sqlgraph.Schema{Nodes: make([]*sqlgraph.Node, 1)}
+	graph := &sqlgraph.Schema{Nodes: make([]*sqlgraph.Node, 2)}
 	graph.Nodes[0] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   country.Table,
@@ -32,6 +33,26 @@ var schemaGraph = func() *sqlgraph.Schema {
 			country.FieldFlag:      {Type: field.TypeString, Column: country.FieldFlag},
 			country.FieldCode:      {Type: field.TypeString, Column: country.FieldCode},
 			country.FieldShort:     {Type: field.TypeString, Column: country.FieldShort},
+		},
+	}
+	graph.Nodes[1] = &sqlgraph.Node{
+		NodeSpec: sqlgraph.NodeSpec{
+			Table:   lang.Table,
+			Columns: lang.Columns,
+			ID: &sqlgraph.FieldSpec{
+				Type:   field.TypeUUID,
+				Column: lang.FieldID,
+			},
+		},
+		Type: "Lang",
+		Fields: map[string]*sqlgraph.FieldSpec{
+			lang.FieldCreatedAt: {Type: field.TypeUint32, Column: lang.FieldCreatedAt},
+			lang.FieldUpdatedAt: {Type: field.TypeUint32, Column: lang.FieldUpdatedAt},
+			lang.FieldDeletedAt: {Type: field.TypeUint32, Column: lang.FieldDeletedAt},
+			lang.FieldLang:      {Type: field.TypeString, Column: lang.FieldLang},
+			lang.FieldLogo:      {Type: field.TypeString, Column: lang.FieldLogo},
+			lang.FieldName:      {Type: field.TypeString, Column: lang.FieldName},
+			lang.FieldShort:     {Type: field.TypeString, Column: lang.FieldShort},
 		},
 	}
 	return graph
@@ -116,4 +137,79 @@ func (f *CountryFilter) WhereCode(p entql.StringP) {
 // WhereShort applies the entql string predicate on the short field.
 func (f *CountryFilter) WhereShort(p entql.StringP) {
 	f.Where(p.Field(country.FieldShort))
+}
+
+// addPredicate implements the predicateAdder interface.
+func (lq *LangQuery) addPredicate(pred func(s *sql.Selector)) {
+	lq.predicates = append(lq.predicates, pred)
+}
+
+// Filter returns a Filter implementation to apply filters on the LangQuery builder.
+func (lq *LangQuery) Filter() *LangFilter {
+	return &LangFilter{config: lq.config, predicateAdder: lq}
+}
+
+// addPredicate implements the predicateAdder interface.
+func (m *LangMutation) addPredicate(pred func(s *sql.Selector)) {
+	m.predicates = append(m.predicates, pred)
+}
+
+// Filter returns an entql.Where implementation to apply filters on the LangMutation builder.
+func (m *LangMutation) Filter() *LangFilter {
+	return &LangFilter{config: m.config, predicateAdder: m}
+}
+
+// LangFilter provides a generic filtering capability at runtime for LangQuery.
+type LangFilter struct {
+	predicateAdder
+	config
+}
+
+// Where applies the entql predicate on the query filter.
+func (f *LangFilter) Where(p entql.P) {
+	f.addPredicate(func(s *sql.Selector) {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[1].Type, p, s); err != nil {
+			s.AddError(err)
+		}
+	})
+}
+
+// WhereID applies the entql [16]byte predicate on the id field.
+func (f *LangFilter) WhereID(p entql.ValueP) {
+	f.Where(p.Field(lang.FieldID))
+}
+
+// WhereCreatedAt applies the entql uint32 predicate on the created_at field.
+func (f *LangFilter) WhereCreatedAt(p entql.Uint32P) {
+	f.Where(p.Field(lang.FieldCreatedAt))
+}
+
+// WhereUpdatedAt applies the entql uint32 predicate on the updated_at field.
+func (f *LangFilter) WhereUpdatedAt(p entql.Uint32P) {
+	f.Where(p.Field(lang.FieldUpdatedAt))
+}
+
+// WhereDeletedAt applies the entql uint32 predicate on the deleted_at field.
+func (f *LangFilter) WhereDeletedAt(p entql.Uint32P) {
+	f.Where(p.Field(lang.FieldDeletedAt))
+}
+
+// WhereLang applies the entql string predicate on the lang field.
+func (f *LangFilter) WhereLang(p entql.StringP) {
+	f.Where(p.Field(lang.FieldLang))
+}
+
+// WhereLogo applies the entql string predicate on the logo field.
+func (f *LangFilter) WhereLogo(p entql.StringP) {
+	f.Where(p.Field(lang.FieldLogo))
+}
+
+// WhereName applies the entql string predicate on the name field.
+func (f *LangFilter) WhereName(p entql.StringP) {
+	f.Where(p.Field(lang.FieldName))
+}
+
+// WhereShort applies the entql string predicate on the short field.
+func (f *LangFilter) WhereShort(p entql.StringP) {
+	f.Where(p.Field(lang.FieldShort))
 }
