@@ -7,6 +7,7 @@ import (
 
 	"github.com/NpoolPlatform/g11n-manager/pkg/db/ent/country"
 	"github.com/NpoolPlatform/g11n-manager/pkg/db/ent/lang"
+	"github.com/NpoolPlatform/g11n-manager/pkg/db/ent/message"
 	"github.com/NpoolPlatform/g11n-manager/pkg/db/ent/schema"
 	"github.com/google/uuid"
 
@@ -114,6 +115,66 @@ func init() {
 	langDescID := langFields[0].Descriptor()
 	// lang.DefaultID holds the default value on creation for the id field.
 	lang.DefaultID = langDescID.Default.(func() uuid.UUID)
+	messageMixin := schema.Message{}.Mixin()
+	message.Policy = privacy.NewPolicies(messageMixin[0], schema.Message{})
+	message.Hooks[0] = func(next ent.Mutator) ent.Mutator {
+		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+			if err := message.Policy.EvalMutation(ctx, m); err != nil {
+				return nil, err
+			}
+			return next.Mutate(ctx, m)
+		})
+	}
+	messageMixinFields0 := messageMixin[0].Fields()
+	_ = messageMixinFields0
+	messageFields := schema.Message{}.Fields()
+	_ = messageFields
+	// messageDescCreatedAt is the schema descriptor for created_at field.
+	messageDescCreatedAt := messageMixinFields0[0].Descriptor()
+	// message.DefaultCreatedAt holds the default value on creation for the created_at field.
+	message.DefaultCreatedAt = messageDescCreatedAt.Default.(func() uint32)
+	// messageDescUpdatedAt is the schema descriptor for updated_at field.
+	messageDescUpdatedAt := messageMixinFields0[1].Descriptor()
+	// message.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	message.DefaultUpdatedAt = messageDescUpdatedAt.Default.(func() uint32)
+	// message.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	message.UpdateDefaultUpdatedAt = messageDescUpdatedAt.UpdateDefault.(func() uint32)
+	// messageDescDeletedAt is the schema descriptor for deleted_at field.
+	messageDescDeletedAt := messageMixinFields0[2].Descriptor()
+	// message.DefaultDeletedAt holds the default value on creation for the deleted_at field.
+	message.DefaultDeletedAt = messageDescDeletedAt.Default.(func() uint32)
+	// messageDescAppID is the schema descriptor for app_id field.
+	messageDescAppID := messageFields[1].Descriptor()
+	// message.DefaultAppID holds the default value on creation for the app_id field.
+	message.DefaultAppID = messageDescAppID.Default.(func() uuid.UUID)
+	// messageDescLangID is the schema descriptor for lang_id field.
+	messageDescLangID := messageFields[2].Descriptor()
+	// message.DefaultLangID holds the default value on creation for the lang_id field.
+	message.DefaultLangID = messageDescLangID.Default.(func() uuid.UUID)
+	// messageDescMessageID is the schema descriptor for message_id field.
+	messageDescMessageID := messageFields[3].Descriptor()
+	// message.DefaultMessageID holds the default value on creation for the message_id field.
+	message.DefaultMessageID = messageDescMessageID.Default.(string)
+	// messageDescMessage is the schema descriptor for message field.
+	messageDescMessage := messageFields[4].Descriptor()
+	// message.DefaultMessage holds the default value on creation for the message field.
+	message.DefaultMessage = messageDescMessage.Default.(string)
+	// messageDescGetIndex is the schema descriptor for get_index field.
+	messageDescGetIndex := messageFields[5].Descriptor()
+	// message.DefaultGetIndex holds the default value on creation for the get_index field.
+	message.DefaultGetIndex = messageDescGetIndex.Default.(uint32)
+	// messageDescDisabled is the schema descriptor for disabled field.
+	messageDescDisabled := messageFields[6].Descriptor()
+	// message.DefaultDisabled holds the default value on creation for the disabled field.
+	message.DefaultDisabled = messageDescDisabled.Default.(bool)
+	// messageDescShort is the schema descriptor for short field.
+	messageDescShort := messageFields[7].Descriptor()
+	// message.DefaultShort holds the default value on creation for the short field.
+	message.DefaultShort = messageDescShort.Default.(string)
+	// messageDescID is the schema descriptor for id field.
+	messageDescID := messageFields[0].Descriptor()
+	// message.DefaultID holds the default value on creation for the id field.
+	message.DefaultID = messageDescID.Default.(func() uuid.UUID)
 }
 
 const (

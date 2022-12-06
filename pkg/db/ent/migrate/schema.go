@@ -42,10 +42,31 @@ var (
 		Columns:    LangsColumns,
 		PrimaryKey: []*schema.Column{LangsColumns[0]},
 	}
+	// MessagesColumns holds the columns for the "messages" table.
+	MessagesColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID, Unique: true},
+		{Name: "created_at", Type: field.TypeUint32},
+		{Name: "updated_at", Type: field.TypeUint32},
+		{Name: "deleted_at", Type: field.TypeUint32},
+		{Name: "app_id", Type: field.TypeUUID, Nullable: true},
+		{Name: "lang_id", Type: field.TypeUUID, Nullable: true},
+		{Name: "message_id", Type: field.TypeString, Nullable: true, Default: ""},
+		{Name: "message", Type: field.TypeString, Nullable: true, Default: ""},
+		{Name: "get_index", Type: field.TypeUint32, Nullable: true, Default: 0},
+		{Name: "disabled", Type: field.TypeBool, Nullable: true, Default: false},
+		{Name: "short", Type: field.TypeString, Nullable: true, Default: ""},
+	}
+	// MessagesTable holds the schema information for the "messages" table.
+	MessagesTable = &schema.Table{
+		Name:       "messages",
+		Columns:    MessagesColumns,
+		PrimaryKey: []*schema.Column{MessagesColumns[0]},
+	}
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
 		CountriesTable,
 		LangsTable,
+		MessagesTable,
 	}
 )
 

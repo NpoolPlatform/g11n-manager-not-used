@@ -30,6 +30,7 @@ type config struct {
 type hooks struct {
 	Country []ent.Hook
 	Lang    []ent.Hook
+	Message []ent.Hook
 }
 
 // Options applies the options on the config object.

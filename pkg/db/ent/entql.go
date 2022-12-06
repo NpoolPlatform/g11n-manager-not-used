@@ -5,6 +5,7 @@ package ent
 import (
 	"github.com/NpoolPlatform/g11n-manager/pkg/db/ent/country"
 	"github.com/NpoolPlatform/g11n-manager/pkg/db/ent/lang"
+	"github.com/NpoolPlatform/g11n-manager/pkg/db/ent/message"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
@@ -14,7 +15,7 @@ import (
 
 // schemaGraph holds a representation of ent/schema at runtime.
 var schemaGraph = func() *sqlgraph.Schema {
-	graph := &sqlgraph.Schema{Nodes: make([]*sqlgraph.Node, 2)}
+	graph := &sqlgraph.Schema{Nodes: make([]*sqlgraph.Node, 3)}
 	graph.Nodes[0] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   country.Table,
@@ -53,6 +54,29 @@ var schemaGraph = func() *sqlgraph.Schema {
 			lang.FieldLogo:      {Type: field.TypeString, Column: lang.FieldLogo},
 			lang.FieldName:      {Type: field.TypeString, Column: lang.FieldName},
 			lang.FieldShort:     {Type: field.TypeString, Column: lang.FieldShort},
+		},
+	}
+	graph.Nodes[2] = &sqlgraph.Node{
+		NodeSpec: sqlgraph.NodeSpec{
+			Table:   message.Table,
+			Columns: message.Columns,
+			ID: &sqlgraph.FieldSpec{
+				Type:   field.TypeUUID,
+				Column: message.FieldID,
+			},
+		},
+		Type: "Message",
+		Fields: map[string]*sqlgraph.FieldSpec{
+			message.FieldCreatedAt: {Type: field.TypeUint32, Column: message.FieldCreatedAt},
+			message.FieldUpdatedAt: {Type: field.TypeUint32, Column: message.FieldUpdatedAt},
+			message.FieldDeletedAt: {Type: field.TypeUint32, Column: message.FieldDeletedAt},
+			message.FieldAppID:     {Type: field.TypeUUID, Column: message.FieldAppID},
+			message.FieldLangID:    {Type: field.TypeUUID, Column: message.FieldLangID},
+			message.FieldMessageID: {Type: field.TypeString, Column: message.FieldMessageID},
+			message.FieldMessage:   {Type: field.TypeString, Column: message.FieldMessage},
+			message.FieldGetIndex:  {Type: field.TypeUint32, Column: message.FieldGetIndex},
+			message.FieldDisabled:  {Type: field.TypeBool, Column: message.FieldDisabled},
+			message.FieldShort:     {Type: field.TypeString, Column: message.FieldShort},
 		},
 	}
 	return graph
@@ -212,4 +236,94 @@ func (f *LangFilter) WhereName(p entql.StringP) {
 // WhereShort applies the entql string predicate on the short field.
 func (f *LangFilter) WhereShort(p entql.StringP) {
 	f.Where(p.Field(lang.FieldShort))
+}
+
+// addPredicate implements the predicateAdder interface.
+func (mq *MessageQuery) addPredicate(pred func(s *sql.Selector)) {
+	mq.predicates = append(mq.predicates, pred)
+}
+
+// Filter returns a Filter implementation to apply filters on the MessageQuery builder.
+func (mq *MessageQuery) Filter() *MessageFilter {
+	return &MessageFilter{config: mq.config, predicateAdder: mq}
+}
+
+// addPredicate implements the predicateAdder interface.
+func (m *MessageMutation) addPredicate(pred func(s *sql.Selector)) {
+	m.predicates = append(m.predicates, pred)
+}
+
+// Filter returns an entql.Where implementation to apply filters on the MessageMutation builder.
+func (m *MessageMutation) Filter() *MessageFilter {
+	return &MessageFilter{config: m.config, predicateAdder: m}
+}
+
+// MessageFilter provides a generic filtering capability at runtime for MessageQuery.
+type MessageFilter struct {
+	predicateAdder
+	config
+}
+
+// Where applies the entql predicate on the query filter.
+func (f *MessageFilter) Where(p entql.P) {
+	f.addPredicate(func(s *sql.Selector) {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[2].Type, p, s); err != nil {
+			s.AddError(err)
+		}
+	})
+}
+
+// WhereID applies the entql [16]byte predicate on the id field.
+func (f *MessageFilter) WhereID(p entql.ValueP) {
+	f.Where(p.Field(message.FieldID))
+}
+
+// WhereCreatedAt applies the entql uint32 predicate on the created_at field.
+func (f *MessageFilter) WhereCreatedAt(p entql.Uint32P) {
+	f.Where(p.Field(message.FieldCreatedAt))
+}
+
+// WhereUpdatedAt applies the entql uint32 predicate on the updated_at field.
+func (f *MessageFilter) WhereUpdatedAt(p entql.Uint32P) {
+	f.Where(p.Field(message.FieldUpdatedAt))
+}
+
+// WhereDeletedAt applies the entql uint32 predicate on the deleted_at field.
+func (f *MessageFilter) WhereDeletedAt(p entql.Uint32P) {
+	f.Where(p.Field(message.FieldDeletedAt))
+}
+
+// WhereAppID applies the entql [16]byte predicate on the app_id field.
+func (f *MessageFilter) WhereAppID(p entql.ValueP) {
+	f.Where(p.Field(message.FieldAppID))
+}
+
+// WhereLangID applies the entql [16]byte predicate on the lang_id field.
+func (f *MessageFilter) WhereLangID(p entql.ValueP) {
+	f.Where(p.Field(message.FieldLangID))
+}
+
+// WhereMessageID applies the entql string predicate on the message_id field.
+func (f *MessageFilter) WhereMessageID(p entql.StringP) {
+	f.Where(p.Field(message.FieldMessageID))
+}
+
+// WhereMessage applies the entql string predicate on the message field.
+func (f *MessageFilter) WhereMessage(p entql.StringP) {
+	f.Where(p.Field(message.FieldMessage))
+}
+
+// WhereGetIndex applies the entql uint32 predicate on the get_index field.
+func (f *MessageFilter) WhereGetIndex(p entql.Uint32P) {
+	f.Where(p.Field(message.FieldGetIndex))
+}
+
+// WhereDisabled applies the entql bool predicate on the disabled field.
+func (f *MessageFilter) WhereDisabled(p entql.BoolP) {
+	f.Where(p.Field(message.FieldDisabled))
+}
+
+// WhereShort applies the entql string predicate on the short field.
+func (f *MessageFilter) WhereShort(p entql.StringP) {
+	f.Where(p.Field(message.FieldShort))
 }

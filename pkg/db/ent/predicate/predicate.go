@@ -11,3 +11,6 @@ type Country func(*sql.Selector)
 
 // Lang is the predicate function for lang builders.
 type Lang func(*sql.Selector)
+
+// Message is the predicate function for message builders.
+type Message func(*sql.Selector)
