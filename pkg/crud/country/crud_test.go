@@ -8,7 +8,6 @@ import (
 	"testing"
 
 	"github.com/NpoolPlatform/g11n-manager/pkg/db/ent"
-	"github.com/shopspring/decimal"
 
 	"github.com/NpoolPlatform/libent-cruder/pkg/cruder"
 
@@ -29,49 +28,31 @@ func init() {
 	}
 }
 
-var entity = ent.Detail{
-	ID:              uuid.New(),
-	AppID:           uuid.New(),
-	UserID:          uuid.New(),
-	CoinTypeID:      uuid.New(),
-	IoType:          npool.IOType_Incoming.String(),
-	IoSubType:       npool.IOSubType_Payment.String(),
-	Amount:          decimal.RequireFromString("9999999999999999999.999999999999999999"),
-	FromCoinTypeID:  uuid.New(),
-	CoinUsdCurrency: decimal.RequireFromString("1.00045000000123012"),
-	IoExtra:         uuid.New().String(),
-	FromOldID:       uuid.New(),
+var entity = ent.Country{
+	ID:      uuid.New(),
+	Country: uuid.NewString(),
+	Flag:    uuid.NewString(),
+	Code:    uuid.NewString(),
+	Short:   uuid.NewString(),
 }
 
 var (
-	id              = entity.ID.String()
-	appID           = entity.AppID.String()
-	userID          = entity.UserID.String()
-	coinTypeID      = entity.CoinTypeID.String()
-	ioType          = npool.IOType(npool.IOType_value[entity.IoType])
-	ioSubType       = npool.IOSubType(npool.IOSubType_value[entity.IoSubType])
-	amount          = entity.Amount.String()
-	fromCoinTypeID  = entity.FromCoinTypeID.String()
-	coinUSDCurrency = entity.CoinUsdCurrency.String()
-	ioExtra         = entity.IoExtra
-	fromOldID       = entity.FromOldID.String()
+	id       = entity.ID.String()
+	country1 = entity.Country
+	flag     = entity.Flag
+	code     = entity.Code
+	short    = entity.Short
 
-	req = npool.DetailReq{
-		ID:              &id,
-		AppID:           &appID,
-		UserID:          &userID,
-		CoinTypeID:      &coinTypeID,
-		IOType:          &ioType,
-		IOSubType:       &ioSubType,
-		Amount:          &amount,
-		FromCoinTypeID:  &fromCoinTypeID,
-		CoinUSDCurrency: &coinUSDCurrency,
-		IOExtra:         &ioExtra,
-		FromOldID:       &fromOldID,
+	req = npool.CountryReq{
+		ID:      &id,
+		Country: &country1,
+		Flag:    &flag,
+		Code:    &code,
+		Short:   &short,
 	}
 )
 
-var info *ent.Detail
+var info *ent.Country
 
 func create(t *testing.T) {
 	var err error
@@ -84,61 +65,37 @@ func create(t *testing.T) {
 }
 
 func createBulk(t *testing.T) {
-	entities := []*ent.Detail{
+	entities := []*ent.Country{
 		{
-			ID:              uuid.New(),
-			AppID:           uuid.New(),
-			UserID:          uuid.New(),
-			CoinTypeID:      uuid.New(),
-			IoType:          npool.IOType_Incoming.String(),
-			IoSubType:       npool.IOSubType_Payment.String(),
-			Amount:          decimal.RequireFromString("10.00896"),
-			FromCoinTypeID:  uuid.New(),
-			CoinUsdCurrency: decimal.RequireFromString("1.8902"),
-			IoExtra:         uuid.New().String(),
-			FromOldID:       uuid.New(),
+			ID:      uuid.New(),
+			Country: uuid.NewString(),
+			Flag:    uuid.NewString(),
+			Code:    uuid.NewString(),
+			Short:   uuid.NewString(),
 		},
 		{
-			ID:              uuid.New(),
-			AppID:           uuid.New(),
-			UserID:          uuid.New(),
-			CoinTypeID:      uuid.New(),
-			IoType:          npool.IOType_Incoming.String(),
-			IoSubType:       npool.IOSubType_Payment.String(),
-			Amount:          decimal.RequireFromString("11.11111"),
-			FromCoinTypeID:  uuid.New(),
-			CoinUsdCurrency: decimal.RequireFromString("1.123"),
-			IoExtra:         uuid.New().String(),
-			FromOldID:       uuid.New(),
+			ID:      uuid.New(),
+			Country: uuid.NewString(),
+			Flag:    uuid.NewString(),
+			Code:    uuid.NewString(),
+			Short:   uuid.NewString(),
 		},
 	}
 
-	reqs := []*npool.DetailReq{}
+	reqs := []*npool.CountryReq{}
 	for _, _entity := range entities {
 		_id := _entity.ID.String()
-		_appID := _entity.AppID.String()
-		_userID := _entity.UserID.String()
-		_coinTypeID := _entity.CoinTypeID.String()
-		_ioType := npool.IOType(npool.IOType_value[_entity.IoType])
-		_ioSubType := npool.IOSubType(npool.IOSubType_value[_entity.IoSubType])
-		_amount := _entity.Amount.String()
-		_fromCoinTypeID := entity.FromCoinTypeID.String()
-		_coinUSDCurrency := _entity.CoinUsdCurrency.String()
-		_ioExtra := _entity.IoExtra
-		_fromOldID := _entity.FromOldID.String()
+		_country := _entity.Country
+		_flag := _entity.Flag
+		_code := _entity.Code
+		_short := _entity.Short
 
-		reqs = append(reqs, &npool.DetailReq{
-			ID:              &_id,
-			AppID:           &_appID,
-			UserID:          &_userID,
-			CoinTypeID:      &_coinTypeID,
-			IOType:          &_ioType,
-			IOSubType:       &_ioSubType,
-			Amount:          &_amount,
-			FromCoinTypeID:  &_fromCoinTypeID,
-			CoinUSDCurrency: &_coinUSDCurrency,
-			IOExtra:         &_ioExtra,
-			FromOldID:       &_fromOldID,
+		reqs = append(reqs, &npool.CountryReq{
+			ID:      &_id,
+			Country: &_country,
+			Flag:    &_flag,
+			Code:    &_code,
+			Short:   &_short,
 		})
 	}
 	infos, err := CreateBulk(context.Background(), reqs)
@@ -227,7 +184,7 @@ func deleteA(t *testing.T) {
 	}
 }
 
-func TestDetail(t *testing.T) {
+func TestCountry(t *testing.T) {
 	if runByGithubAction, err := strconv.ParseBool(os.Getenv("RUN_BY_GITHUB_ACTION")); err == nil && runByGithubAction {
 		return
 	}

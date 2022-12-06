@@ -34,9 +34,9 @@ func withCRUD(ctx context.Context, handler handler) (cruder.Any, error) {
 	return handler(_ctx, cli)
 }
 
-func CreateDetail(ctx context.Context, in *npool.DetailReq) (*npool.Detail, error) {
+func CreateCountry(ctx context.Context, in *npool.CountryReq) (*npool.Country, error) {
 	info, err := withCRUD(ctx, func(_ctx context.Context, cli npool.ManagerClient) (cruder.Any, error) {
-		resp, err := cli.CreateDetail(ctx, &npool.CreateDetailRequest{
+		resp, err := cli.CreateCountry(ctx, &npool.CreateCountryRequest{
 			Info: in,
 		})
 		if err != nil {
@@ -47,12 +47,12 @@ func CreateDetail(ctx context.Context, in *npool.DetailReq) (*npool.Detail, erro
 	if err != nil {
 		return nil, fmt.Errorf("fail create country: %v", err)
 	}
-	return info.(*npool.Detail), nil
+	return info.(*npool.Country), nil
 }
 
-func CreateDetails(ctx context.Context, in []*npool.DetailReq) ([]*npool.Detail, error) {
+func CreateCountries(ctx context.Context, in []*npool.CountryReq) ([]*npool.Country, error) {
 	infos, err := withCRUD(ctx, func(_ctx context.Context, cli npool.ManagerClient) (cruder.Any, error) {
-		resp, err := cli.CreateDetails(ctx, &npool.CreateDetailsRequest{
+		resp, err := cli.CreateCountries(ctx, &npool.CreateCountriesRequest{
 			Infos: in,
 		})
 		if err != nil {
@@ -63,12 +63,12 @@ func CreateDetails(ctx context.Context, in []*npool.DetailReq) ([]*npool.Detail,
 	if err != nil {
 		return nil, fmt.Errorf("fail create countrys: %v", err)
 	}
-	return infos.([]*npool.Detail), nil
+	return infos.([]*npool.Country), nil
 }
 
-func GetDetail(ctx context.Context, id string) (*npool.Detail, error) {
+func GetCountry(ctx context.Context, id string) (*npool.Country, error) {
 	info, err := withCRUD(ctx, func(_ctx context.Context, cli npool.ManagerClient) (cruder.Any, error) {
-		resp, err := cli.GetDetail(ctx, &npool.GetDetailRequest{
+		resp, err := cli.GetCountry(ctx, &npool.GetCountryRequest{
 			ID: id,
 		})
 		if err != nil {
@@ -79,12 +79,12 @@ func GetDetail(ctx context.Context, id string) (*npool.Detail, error) {
 	if err != nil {
 		return nil, fmt.Errorf("fail get country: %v", err)
 	}
-	return info.(*npool.Detail), nil
+	return info.(*npool.Country), nil
 }
 
-func GetDetailOnly(ctx context.Context, conds *npool.Conds) (*npool.Detail, error) {
+func GetCountryOnly(ctx context.Context, conds *npool.Conds) (*npool.Country, error) {
 	info, err := withCRUD(ctx, func(_ctx context.Context, cli npool.ManagerClient) (cruder.Any, error) {
-		resp, err := cli.GetDetailOnly(ctx, &npool.GetDetailOnlyRequest{
+		resp, err := cli.GetCountryOnly(ctx, &npool.GetCountryOnlyRequest{
 			Conds: conds,
 		})
 		if err != nil {
@@ -95,13 +95,13 @@ func GetDetailOnly(ctx context.Context, conds *npool.Conds) (*npool.Detail, erro
 	if err != nil {
 		return nil, fmt.Errorf("fail get country: %v", err)
 	}
-	return info.(*npool.Detail), nil
+	return info.(*npool.Country), nil
 }
 
-func GetDetails(ctx context.Context, conds *npool.Conds, limit, offset int32) ([]*npool.Detail, uint32, error) {
+func GetCountries(ctx context.Context, conds *npool.Conds, limit, offset int32) ([]*npool.Country, uint32, error) {
 	var total uint32
 	infos, err := withCRUD(ctx, func(_ctx context.Context, cli npool.ManagerClient) (cruder.Any, error) {
-		resp, err := cli.GetDetails(ctx, &npool.GetDetailsRequest{
+		resp, err := cli.GetCountries(ctx, &npool.GetCountriesRequest{
 			Conds:  conds,
 			Limit:  limit,
 			Offset: offset,
@@ -115,12 +115,12 @@ func GetDetails(ctx context.Context, conds *npool.Conds, limit, offset int32) ([
 	if err != nil {
 		return nil, 0, fmt.Errorf("fail get countrys: %v", err)
 	}
-	return infos.([]*npool.Detail), total, nil
+	return infos.([]*npool.Country), total, nil
 }
 
-func ExistDetail(ctx context.Context, id string) (bool, error) {
+func ExistCountry(ctx context.Context, id string) (bool, error) {
 	infos, err := withCRUD(ctx, func(_ctx context.Context, cli npool.ManagerClient) (cruder.Any, error) {
-		resp, err := cli.ExistDetail(ctx, &npool.ExistDetailRequest{
+		resp, err := cli.ExistCountry(ctx, &npool.ExistCountryRequest{
 			ID: id,
 		})
 		if err != nil {
@@ -134,9 +134,9 @@ func ExistDetail(ctx context.Context, id string) (bool, error) {
 	return infos.(bool), nil
 }
 
-func ExistDetailConds(ctx context.Context, conds *npool.Conds) (bool, error) {
+func ExistCountryConds(ctx context.Context, conds *npool.Conds) (bool, error) {
 	infos, err := withCRUD(ctx, func(_ctx context.Context, cli npool.ManagerClient) (cruder.Any, error) {
-		resp, err := cli.ExistDetailConds(ctx, &npool.ExistDetailCondsRequest{
+		resp, err := cli.ExistCountryConds(ctx, &npool.ExistCountryCondsRequest{
 			Conds: conds,
 		})
 		if err != nil {
@@ -150,9 +150,9 @@ func ExistDetailConds(ctx context.Context, conds *npool.Conds) (bool, error) {
 	return infos.(bool), nil
 }
 
-func CountDetails(ctx context.Context, conds *npool.Conds) (uint32, error) {
+func CountCountries(ctx context.Context, conds *npool.Conds) (uint32, error) {
 	infos, err := withCRUD(ctx, func(_ctx context.Context, cli npool.ManagerClient) (cruder.Any, error) {
-		resp, err := cli.CountDetails(ctx, &npool.CountDetailsRequest{
+		resp, err := cli.CountCountries(ctx, &npool.CountCountriesRequest{
 			Conds: conds,
 		})
 		if err != nil {

@@ -6,6 +6,6 @@ COPY g11n-manager /app
 
 ENTRYPOINT ["/app/g11n-manager"]
 
-EXPOSE 50330 50331 50332 50333
+EXPOSE 50590 50591 50592 50593
 
 CMD ["run"]

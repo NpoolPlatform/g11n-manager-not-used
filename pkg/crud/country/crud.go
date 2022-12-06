@@ -8,7 +8,7 @@ import (
 	constant "github.com/NpoolPlatform/g11n-manager/pkg/message/const"
 	commontracer "github.com/NpoolPlatform/g11n-manager/pkg/tracer"
 	tracer "github.com/NpoolPlatform/g11n-manager/pkg/tracer/country"
-	"github.com/shopspring/decimal"
+
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/codes"
 
@@ -21,8 +21,27 @@ import (
 	"github.com/google/uuid"
 )
 
-func Create(ctx context.Context, in *npool.DetailReq) (*ent.Detail, error) { //nolint
-	var info *ent.Detail
+func CreateSet(c *ent.CountryCreate, in *npool.CountryReq) *ent.CountryCreate {
+	if in.ID != nil {
+		c.SetID(uuid.MustParse(in.GetID()))
+	}
+	if in.Country != nil {
+		c.SetCountry(in.GetCountry())
+	}
+	if in.Flag != nil {
+		c.SetFlag(in.GetFlag())
+	}
+	if in.Code != nil {
+		c.SetCode(in.GetCode())
+	}
+	if in.Short != nil {
+		c.SetShort(in.GetShort())
+	}
+	return c
+}
+
+func Create(ctx context.Context, in *npool.CountryReq) (*ent.Country, error) {
+	var info *ent.Country
 	var err error
 
 	_, span := otel.Tracer(constant.ServiceName).Start(ctx, "Create")
@@ -38,53 +57,7 @@ func Create(ctx context.Context, in *npool.DetailReq) (*ent.Detail, error) { //n
 	span = tracer.Trace(span, in)
 
 	err = db.WithClient(ctx, func(_ctx context.Context, cli *ent.Client) error {
-		c := cli.Debug().Detail.Create()
-
-		if in.ID != nil {
-			c.SetID(uuid.MustParse(in.GetID()))
-		}
-		if in.AppID != nil {
-			c.SetAppID(uuid.MustParse(in.GetAppID()))
-		}
-		if in.UserID != nil {
-			c.SetUserID(uuid.MustParse(in.GetUserID()))
-		}
-		if in.CoinTypeID != nil {
-			c.SetCoinTypeID(uuid.MustParse(in.GetCoinTypeID()))
-		}
-		if in.IOType != nil {
-			c.SetIoType(in.GetIOType().String())
-		}
-		if in.IOSubType != nil {
-			c.SetIoSubType(in.GetIOSubType().String())
-		}
-		if in.Amount != nil {
-			amount, err := decimal.NewFromString(in.GetAmount())
-			if err != nil {
-				return err
-			}
-			c.SetAmount(amount)
-		}
-		if in.FromCoinTypeID != nil {
-			c.SetFromCoinTypeID(uuid.MustParse(in.GetFromCoinTypeID()))
-		}
-		if in.CoinUSDCurrency != nil {
-			currency, err := decimal.NewFromString(in.GetCoinUSDCurrency())
-			if err != nil {
-				return err
-			}
-			c.SetCoinUsdCurrency(currency)
-		}
-		if in.IOExtra != nil {
-			c.SetIoExtra(in.GetIOExtra())
-		}
-		if in.FromOldID != nil {
-			c.SetFromOldID(uuid.MustParse(in.GetFromOldID()))
-		}
-		if in.CreatedAt != nil {
-			c.SetCreatedAt(in.GetCreatedAt())
-		}
-
+		c := CreateSet(cli.Country.Create(), in)
 		info, err = c.Save(_ctx)
 		return err
 	})
@@ -95,7 +68,7 @@ func Create(ctx context.Context, in *npool.DetailReq) (*ent.Detail, error) { //n
 	return info, nil
 }
 
-func CreateBulk(ctx context.Context, in []*npool.DetailReq) ([]*ent.Detail, error) { //nolint
+func CreateBulk(ctx context.Context, in []*npool.CountryReq) ([]*ent.Country, error) {
 	var err error
 
 	_, span := otel.Tracer(constant.ServiceName).Start(ctx, "CreateBulk")
@@ -110,57 +83,13 @@ func CreateBulk(ctx context.Context, in []*npool.DetailReq) ([]*ent.Detail, erro
 
 	span = tracer.TraceMany(span, in)
 
-	rows := []*ent.Detail{}
+	rows := []*ent.Country{}
 	err = db.WithTx(ctx, func(_ctx context.Context, tx *ent.Tx) error {
-		bulk := make([]*ent.DetailCreate, len(in))
+		bulk := make([]*ent.CountryCreate, len(in))
 		for i, info := range in {
-			bulk[i] = tx.Detail.Create()
-			if info.ID != nil {
-				bulk[i].SetID(uuid.MustParse(info.GetID()))
-			}
-			if info.AppID != nil {
-				bulk[i].SetAppID(uuid.MustParse(info.GetAppID()))
-			}
-			if info.UserID != nil {
-				bulk[i].SetUserID(uuid.MustParse(info.GetUserID()))
-			}
-			if info.CoinTypeID != nil {
-				bulk[i].SetCoinTypeID(uuid.MustParse(info.GetCoinTypeID()))
-			}
-			if info.IOType != nil {
-				bulk[i].SetIoType(info.GetIOType().String())
-			}
-			if info.IOSubType != nil {
-				bulk[i].SetIoSubType(info.GetIOSubType().String())
-			}
-			if info.Amount != nil {
-				amount, err := decimal.NewFromString(info.GetAmount())
-				if err != nil {
-					return err
-				}
-				bulk[i].SetAmount(amount)
-			}
-			if info.FromCoinTypeID != nil {
-				bulk[i].SetCoinTypeID(uuid.MustParse(info.GetFromCoinTypeID()))
-			}
-			if info.CoinUSDCurrency != nil {
-				currency, err := decimal.NewFromString(info.GetCoinUSDCurrency())
-				if err != nil {
-					return err
-				}
-				bulk[i].SetCoinUsdCurrency(currency)
-			}
-			if info.IOExtra != nil {
-				bulk[i].SetIoExtra(info.GetIOExtra())
-			}
-			if info.FromOldID != nil {
-				bulk[i].SetFromOldID(uuid.MustParse(info.GetFromOldID()))
-			}
-			if info.CreatedAt != nil {
-				bulk[i].SetCreatedAt(info.GetCreatedAt())
-			}
+			bulk[i] = CreateSet(tx.Country.Create(), info)
 		}
-		rows, err = tx.Detail.CreateBulk(bulk...).Save(_ctx)
+		rows, err = tx.Country.CreateBulk(bulk...).Save(_ctx)
 		return err
 	})
 	if err != nil {
@@ -169,8 +98,65 @@ func CreateBulk(ctx context.Context, in []*npool.DetailReq) ([]*ent.Detail, erro
 	return rows, nil
 }
 
-func Row(ctx context.Context, id uuid.UUID) (*ent.Detail, error) {
-	var info *ent.Detail
+func UpdateSet(info *ent.Country, in *npool.CountryReq) *ent.CountryUpdateOne {
+	stm := info.Update()
+
+	if in.Country != nil {
+		stm = stm.SetCountry(in.GetCountry())
+	}
+	if in.Flag != nil {
+		stm = stm.SetFlag(in.GetFlag())
+	}
+	if in.Code != nil {
+		stm = stm.SetCode(in.GetCode())
+	}
+	if in.Short != nil {
+		stm = stm.SetShort(in.GetShort())
+	}
+
+	return stm
+}
+
+func Update(ctx context.Context, in *npool.CountryReq) (*ent.Country, error) {
+	var info *ent.Country
+	var err error
+
+	_, span := otel.Tracer(constant.ServiceName).Start(ctx, "Create")
+	defer span.End()
+
+	defer func() {
+		if err != nil {
+			span.SetStatus(codes.Error, "db operation fail")
+			span.RecordError(err)
+		}
+	}()
+
+	span = tracer.Trace(span, in)
+
+	err = db.WithTx(ctx, func(_ctx context.Context, tx *ent.Tx) error {
+		info, err = tx.Country.Query().Where(country.ID(uuid.MustParse(in.GetID()))).ForUpdate().Only(_ctx)
+		if err != nil {
+			return fmt.Errorf("fail query country: %v", err)
+		}
+
+		stm := UpdateSet(info, in)
+
+		info, err = stm.Save(_ctx)
+		if err != nil {
+			return fmt.Errorf("fail update country: %v", err)
+		}
+
+		return nil
+	})
+	if err != nil {
+		return nil, fmt.Errorf("fail update country: %v", err)
+	}
+
+	return info, nil
+}
+
+func Row(ctx context.Context, id uuid.UUID) (*ent.Country, error) {
+	var info *ent.Country
 	var err error
 
 	_, span := otel.Tracer(constant.ServiceName).Start(ctx, "Row")
@@ -186,7 +172,7 @@ func Row(ctx context.Context, id uuid.UUID) (*ent.Detail, error) {
 	span = commontracer.TraceID(span, id.String())
 
 	err = db.WithClient(ctx, func(_ctx context.Context, cli *ent.Client) error {
-		info, err = cli.Detail.Query().Where(country.ID(id)).Only(_ctx)
+		info, err = cli.Country.Query().Where(country.ID(id)).Only(_ctx)
 		return err
 	})
 	if err != nil {
@@ -196,8 +182,8 @@ func Row(ctx context.Context, id uuid.UUID) (*ent.Detail, error) {
 	return info, nil
 }
 
-func setQueryConds(conds *npool.Conds, cli *ent.Client) (*ent.DetailQuery, error) { //nolint
-	stm := cli.Detail.Query()
+func SetQueryConds(conds *npool.Conds, cli *ent.Client) (*ent.CountryQuery, error) {
+	stm := cli.Country.Query()
 	if conds.ID != nil {
 		switch conds.GetID().GetOp() {
 		case cruder.EQ:
@@ -206,98 +192,26 @@ func setQueryConds(conds *npool.Conds, cli *ent.Client) (*ent.DetailQuery, error
 			return nil, fmt.Errorf("invalid country field")
 		}
 	}
-	if conds.AppID != nil {
-		switch conds.GetAppID().GetOp() {
-		case cruder.EQ:
-			stm.Where(country.AppID(uuid.MustParse(conds.GetAppID().GetValue())))
-		default:
-			return nil, fmt.Errorf("invalid country field")
-		}
-	}
-	if conds.UserID != nil {
-		switch conds.GetUserID().GetOp() {
-		case cruder.EQ:
-			stm.Where(country.UserID(uuid.MustParse(conds.GetUserID().GetValue())))
-		default:
-			return nil, fmt.Errorf("invalid country field")
-		}
-	}
-	if conds.CoinTypeID != nil {
-		switch conds.GetCoinTypeID().GetOp() {
-		case cruder.EQ:
-			stm.Where(country.CoinTypeID(uuid.MustParse(conds.GetCoinTypeID().GetValue())))
-		default:
-			return nil, fmt.Errorf("invalid country field")
-		}
-	}
-	if conds.IOType != nil {
-		switch conds.GetIOType().GetOp() {
-		case cruder.EQ:
-			stm.Where(country.IoType(npool.IOType(conds.GetIOType().GetValue()).String()))
-		default:
-			return nil, fmt.Errorf("invalid country field")
-		}
-	}
-	if conds.IOSubType != nil {
-		switch conds.GetIOSubType().GetOp() {
-		case cruder.EQ:
-			stm.Where(country.IoType(npool.IOSubType(conds.GetIOSubType().GetValue()).String()))
-		default:
-			return nil, fmt.Errorf("invalid country field")
-		}
-	}
-	if conds.Amount != nil {
-		amount, err := decimal.NewFromString(conds.GetAmount().GetValue())
-		if err != nil {
-			return nil, err
-		}
-		switch conds.GetAmount().GetOp() {
-		case cruder.LT:
-			stm.Where(country.AmountLT(amount))
-		case cruder.GT:
-			stm.Where(country.AmountGT(amount))
-		case cruder.EQ:
-			stm.Where(country.AmountEQ(amount))
-		default:
-			return nil, fmt.Errorf("invalid country field")
-		}
-	}
-	if conds.FromCoinTypeID != nil {
-		switch conds.GetFromCoinTypeID().GetOp() {
-		case cruder.EQ:
-			stm.Where(country.FromCoinTypeID(uuid.MustParse(conds.GetFromCoinTypeID().GetValue())))
-		default:
-			return nil, fmt.Errorf("invalid country field")
-		}
-	}
-	if conds.CoinUSDCurrency != nil {
-		currency, err := decimal.NewFromString(conds.GetCoinUSDCurrency().GetValue())
-		if err != nil {
-			return nil, err
-		}
-		switch conds.GetCoinUSDCurrency().GetOp() {
-		case cruder.LT:
-			stm.Where(country.CoinUsdCurrencyLT(currency))
-		case cruder.GT:
-			stm.Where(country.CoinUsdCurrencyGT(currency))
-		case cruder.EQ:
-			stm.Where(country.CoinUsdCurrencyEQ(currency))
-		default:
-			return nil, fmt.Errorf("invalid country field")
-		}
-	}
-	if conds.IOExtra != nil {
-		switch conds.GetIOExtra().GetOp() {
+	if conds.Country != nil {
+		switch conds.GetCountry().GetOp() {
 		case cruder.LIKE:
-			stm.Where(country.IoExtraContains(conds.GetIOExtra().GetValue()))
+			stm.Where(country.Country(conds.GetCountry().GetValue()))
 		default:
 			return nil, fmt.Errorf("invalid country field")
 		}
 	}
-	if conds.FromOldID != nil {
-		switch conds.GetFromOldID().GetOp() {
-		case cruder.EQ:
-			stm.Where(country.FromOldID(uuid.MustParse(conds.GetFromOldID().GetValue())))
+	if conds.Code != nil {
+		switch conds.GetCode().GetOp() {
+		case cruder.LIKE:
+			stm.Where(country.Code(conds.GetCode().GetValue()))
+		default:
+			return nil, fmt.Errorf("invalid country field")
+		}
+	}
+	if conds.Short != nil {
+		switch conds.GetShort().GetOp() {
+		case cruder.LIKE:
+			stm.Where(country.Short(conds.GetShort().GetValue()))
 		default:
 			return nil, fmt.Errorf("invalid country field")
 		}
@@ -305,7 +219,7 @@ func setQueryConds(conds *npool.Conds, cli *ent.Client) (*ent.DetailQuery, error
 	return stm, nil
 }
 
-func Rows(ctx context.Context, conds *npool.Conds, offset, limit int) ([]*ent.Detail, int, error) {
+func Rows(ctx context.Context, conds *npool.Conds, offset, limit int) ([]*ent.Country, int, error) {
 	var err error
 
 	_, span := otel.Tracer(constant.ServiceName).Start(ctx, "Rows")
@@ -321,10 +235,10 @@ func Rows(ctx context.Context, conds *npool.Conds, offset, limit int) ([]*ent.De
 	span = tracer.TraceConds(span, conds)
 	span = commontracer.TraceOffsetLimit(span, offset, limit)
 
-	rows := []*ent.Detail{}
+	rows := []*ent.Country{}
 	var total int
 	err = db.WithClient(ctx, func(_ctx context.Context, cli *ent.Client) error {
-		stm, err := setQueryConds(conds, cli)
+		stm, err := SetQueryConds(conds, cli)
 		if err != nil {
 			return err
 		}
@@ -351,8 +265,8 @@ func Rows(ctx context.Context, conds *npool.Conds, offset, limit int) ([]*ent.De
 	return rows, total, nil
 }
 
-func RowOnly(ctx context.Context, conds *npool.Conds) (*ent.Detail, error) {
-	var info *ent.Detail
+func RowOnly(ctx context.Context, conds *npool.Conds) (*ent.Country, error) {
+	var info *ent.Country
 	var err error
 
 	_, span := otel.Tracer(constant.ServiceName).Start(ctx, "RowOnly")
@@ -368,7 +282,7 @@ func RowOnly(ctx context.Context, conds *npool.Conds) (*ent.Detail, error) {
 	span = tracer.TraceConds(span, conds)
 
 	err = db.WithClient(ctx, func(_ctx context.Context, cli *ent.Client) error {
-		stm, err := setQueryConds(conds, cli)
+		stm, err := SetQueryConds(conds, cli)
 		if err != nil {
 			return err
 		}
@@ -404,7 +318,7 @@ func Count(ctx context.Context, conds *npool.Conds) (uint32, error) {
 	span = tracer.TraceConds(span, conds)
 
 	err = db.WithClient(ctx, func(_ctx context.Context, cli *ent.Client) error {
-		stm, err := setQueryConds(conds, cli)
+		stm, err := SetQueryConds(conds, cli)
 		if err != nil {
 			return err
 		}
@@ -439,7 +353,7 @@ func Exist(ctx context.Context, id uuid.UUID) (bool, error) {
 	span = commontracer.TraceID(span, id.String())
 
 	err = db.WithClient(ctx, func(_ctx context.Context, cli *ent.Client) error {
-		exist, err = cli.Detail.Query().Where(country.ID(id)).Exist(_ctx)
+		exist, err = cli.Country.Query().Where(country.ID(id)).Exist(_ctx)
 		return err
 	})
 	if err != nil {
@@ -466,7 +380,7 @@ func ExistConds(ctx context.Context, conds *npool.Conds) (bool, error) {
 	span = tracer.TraceConds(span, conds)
 
 	err = db.WithClient(ctx, func(_ctx context.Context, cli *ent.Client) error {
-		stm, err := setQueryConds(conds, cli)
+		stm, err := SetQueryConds(conds, cli)
 		if err != nil {
 			return err
 		}
@@ -485,8 +399,8 @@ func ExistConds(ctx context.Context, conds *npool.Conds) (bool, error) {
 	return exist, nil
 }
 
-func Delete(ctx context.Context, id uuid.UUID) (*ent.Detail, error) {
-	var info *ent.Detail
+func Delete(ctx context.Context, id uuid.UUID) (*ent.Country, error) {
+	var info *ent.Country
 	var err error
 
 	_, span := otel.Tracer(constant.ServiceName).Start(ctx, "Delete")
@@ -502,7 +416,7 @@ func Delete(ctx context.Context, id uuid.UUID) (*ent.Detail, error) {
 	span = commontracer.TraceID(span, id.String())
 
 	err = db.WithClient(ctx, func(_ctx context.Context, cli *ent.Client) error {
-		info, err = cli.Detail.UpdateOneID(id).
+		info, err = cli.Country.UpdateOneID(id).
 			SetDeletedAt(uint32(time.Now().Unix())).
 			Save(_ctx)
 		return err

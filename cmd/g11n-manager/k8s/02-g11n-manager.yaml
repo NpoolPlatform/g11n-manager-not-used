@@ -58,16 +58,16 @@ metadata:
 spec:
   ports:
     - name: http
-      port: 50330
-      targetPort: 50330
+      port: 50590
+      targetPort: 50590
     - name: grpc
-      port: 50331
-      targetPort: 50331
+      port: 50591
+      targetPort: 50591
     - name: healthz
-      port: 50332
-      targetPort: 50332
+      port: 50592
+      targetPort: 50592
     - name: prometheus
-      port: 50333
-      targetPort: 50333
+      port: 50593
+      targetPort: 50593
   selector:
     app: g11n-manager

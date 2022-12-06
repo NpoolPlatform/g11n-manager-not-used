@@ -22,10 +22,10 @@ import (
 	"github.com/google/uuid"
 )
 
-func (s *Server) CreateDetail(ctx context.Context, in *npool.CreateDetailRequest) (*npool.CreateDetailResponse, error) {
+func (s *Server) CreateCountry(ctx context.Context, in *npool.CreateCountryRequest) (*npool.CreateCountryResponse, error) {
 	var err error
 
-	_, span := otel.Tracer(constant.ServiceName).Start(ctx, "CreateDetail")
+	_, span := otel.Tracer(constant.ServiceName).Start(ctx, "CreateCountry")
 	defer span.End()
 
 	defer func() {
@@ -39,7 +39,7 @@ func (s *Server) CreateDetail(ctx context.Context, in *npool.CreateDetailRequest
 
 	err = validate(in.GetInfo())
 	if err != nil {
-		return &npool.CreateDetailResponse{}, err
+		return &npool.CreateCountryResponse{}, err
 	}
 
 	span = commontracer.TraceInvoker(span, "country", "crud", "Create")
@@ -47,18 +47,18 @@ func (s *Server) CreateDetail(ctx context.Context, in *npool.CreateDetailRequest
 	info, err := crud.Create(ctx, in.GetInfo())
 	if err != nil {
 		logger.Sugar().Errorf("fail create country: %v", err.Error())
-		return &npool.CreateDetailResponse{}, status.Error(codes.Internal, err.Error())
+		return &npool.CreateCountryResponse{}, status.Error(codes.Internal, err.Error())
 	}
 
-	return &npool.CreateDetailResponse{
+	return &npool.CreateCountryResponse{
 		Info: converter.Ent2Grpc(info),
 	}, nil
 }
 
-func (s *Server) CreateDetails(ctx context.Context, in *npool.CreateDetailsRequest) (*npool.CreateDetailsResponse, error) {
+func (s *Server) CreateCountries(ctx context.Context, in *npool.CreateCountriesRequest) (*npool.CreateCountriesResponse, error) {
 	var err error
 
-	_, span := otel.Tracer(constant.ServiceName).Start(ctx, "CreateDetails")
+	_, span := otel.Tracer(constant.ServiceName).Start(ctx, "CreateCountries")
 	defer span.End()
 
 	defer func() {
@@ -69,12 +69,12 @@ func (s *Server) CreateDetails(ctx context.Context, in *npool.CreateDetailsReque
 	}()
 
 	if len(in.GetInfos()) == 0 {
-		return &npool.CreateDetailsResponse{}, status.Error(codes.InvalidArgument, "Infos is empty")
+		return &npool.CreateCountriesResponse{}, status.Error(codes.InvalidArgument, "Infos is empty")
 	}
 
 	err = duplicate(in.GetInfos())
 	if err != nil {
-		return &npool.CreateDetailsResponse{}, err
+		return &npool.CreateCountriesResponse{}, err
 	}
 
 	span = tracer.TraceMany(span, in.GetInfos())
@@ -83,18 +83,18 @@ func (s *Server) CreateDetails(ctx context.Context, in *npool.CreateDetailsReque
 	rows, err := crud.CreateBulk(ctx, in.GetInfos())
 	if err != nil {
 		logger.Sugar().Errorf("fail create countrys: %v", err)
-		return &npool.CreateDetailsResponse{}, status.Error(codes.Internal, err.Error())
+		return &npool.CreateCountriesResponse{}, status.Error(codes.Internal, err.Error())
 	}
 
-	return &npool.CreateDetailsResponse{
+	return &npool.CreateCountriesResponse{
 		Infos: converter.Ent2GrpcMany(rows),
 	}, nil
 }
 
-func (s *Server) GetDetail(ctx context.Context, in *npool.GetDetailRequest) (*npool.GetDetailResponse, error) {
+func (s *Server) GetCountry(ctx context.Context, in *npool.GetCountryRequest) (*npool.GetCountryResponse, error) {
 	var err error
 
-	_, span := otel.Tracer(constant.ServiceName).Start(ctx, "GetDetail")
+	_, span := otel.Tracer(constant.ServiceName).Start(ctx, "GetCountry")
 	defer span.End()
 
 	defer func() {
@@ -108,7 +108,7 @@ func (s *Server) GetDetail(ctx context.Context, in *npool.GetDetailRequest) (*np
 
 	id, err := uuid.Parse(in.GetID())
 	if err != nil {
-		return &npool.GetDetailResponse{}, status.Error(codes.InvalidArgument, err.Error())
+		return &npool.GetCountryResponse{}, status.Error(codes.InvalidArgument, err.Error())
 	}
 
 	span = commontracer.TraceInvoker(span, "country", "crud", "Row")
@@ -116,18 +116,18 @@ func (s *Server) GetDetail(ctx context.Context, in *npool.GetDetailRequest) (*np
 	info, err := crud.Row(ctx, id)
 	if err != nil {
 		logger.Sugar().Errorf("fail get country: %v", err)
-		return &npool.GetDetailResponse{}, status.Error(codes.Internal, err.Error())
+		return &npool.GetCountryResponse{}, status.Error(codes.Internal, err.Error())
 	}
 
-	return &npool.GetDetailResponse{
+	return &npool.GetCountryResponse{
 		Info: converter.Ent2Grpc(info),
 	}, nil
 }
 
-func (s *Server) GetDetailOnly(ctx context.Context, in *npool.GetDetailOnlyRequest) (*npool.GetDetailOnlyResponse, error) {
+func (s *Server) GetCountryOnly(ctx context.Context, in *npool.GetCountryOnlyRequest) (*npool.GetCountryOnlyResponse, error) {
 	var err error
 
-	_, span := otel.Tracer(constant.ServiceName).Start(ctx, "GetDetailOnly")
+	_, span := otel.Tracer(constant.ServiceName).Start(ctx, "GetCountryOnly")
 	defer span.End()
 
 	defer func() {
@@ -143,18 +143,18 @@ func (s *Server) GetDetailOnly(ctx context.Context, in *npool.GetDetailOnlyReque
 	info, err := crud.RowOnly(ctx, in.GetConds())
 	if err != nil {
 		logger.Sugar().Errorf("fail get countrys: %v", err)
-		return &npool.GetDetailOnlyResponse{}, status.Error(codes.Internal, err.Error())
+		return &npool.GetCountryOnlyResponse{}, status.Error(codes.Internal, err.Error())
 	}
 
-	return &npool.GetDetailOnlyResponse{
+	return &npool.GetCountryOnlyResponse{
 		Info: converter.Ent2Grpc(info),
 	}, nil
 }
 
-func (s *Server) GetDetails(ctx context.Context, in *npool.GetDetailsRequest) (*npool.GetDetailsResponse, error) {
+func (s *Server) GetCountries(ctx context.Context, in *npool.GetCountriesRequest) (*npool.GetCountriesResponse, error) {
 	var err error
 
-	_, span := otel.Tracer(constant.ServiceName).Start(ctx, "GetDetails")
+	_, span := otel.Tracer(constant.ServiceName).Start(ctx, "GetCountries")
 	defer span.End()
 
 	defer func() {
@@ -171,19 +171,19 @@ func (s *Server) GetDetails(ctx context.Context, in *npool.GetDetailsRequest) (*
 	rows, total, err := crud.Rows(ctx, in.GetConds(), int(in.GetOffset()), int(in.GetLimit()))
 	if err != nil {
 		logger.Sugar().Errorf("fail get countrys: %v", err)
-		return &npool.GetDetailsResponse{}, status.Error(codes.Internal, err.Error())
+		return &npool.GetCountriesResponse{}, status.Error(codes.Internal, err.Error())
 	}
 
-	return &npool.GetDetailsResponse{
+	return &npool.GetCountriesResponse{
 		Infos: converter.Ent2GrpcMany(rows),
 		Total: uint32(total),
 	}, nil
 }
 
-func (s *Server) ExistDetail(ctx context.Context, in *npool.ExistDetailRequest) (*npool.ExistDetailResponse, error) {
+func (s *Server) ExistCountry(ctx context.Context, in *npool.ExistCountryRequest) (*npool.ExistCountryResponse, error) {
 	var err error
 
-	_, span := otel.Tracer(constant.ServiceName).Start(ctx, "ExistDetail")
+	_, span := otel.Tracer(constant.ServiceName).Start(ctx, "ExistCountry")
 	defer span.End()
 
 	defer func() {
@@ -197,7 +197,7 @@ func (s *Server) ExistDetail(ctx context.Context, in *npool.ExistDetailRequest) 
 
 	id, err := uuid.Parse(in.GetID())
 	if err != nil {
-		return &npool.ExistDetailResponse{}, status.Error(codes.InvalidArgument, err.Error())
+		return &npool.ExistCountryResponse{}, status.Error(codes.InvalidArgument, err.Error())
 	}
 
 	span = commontracer.TraceInvoker(span, "country", "crud", "Exist")
@@ -205,19 +205,19 @@ func (s *Server) ExistDetail(ctx context.Context, in *npool.ExistDetailRequest) 
 	exist, err := crud.Exist(ctx, id)
 	if err != nil {
 		logger.Sugar().Errorf("fail check country: %v", err)
-		return &npool.ExistDetailResponse{}, status.Error(codes.Internal, err.Error())
+		return &npool.ExistCountryResponse{}, status.Error(codes.Internal, err.Error())
 	}
 
-	return &npool.ExistDetailResponse{
+	return &npool.ExistCountryResponse{
 		Info: exist,
 	}, nil
 }
 
-func (s *Server) ExistDetailConds(ctx context.Context,
-	in *npool.ExistDetailCondsRequest) (*npool.ExistDetailCondsResponse, error) {
+func (s *Server) ExistCountryConds(ctx context.Context,
+	in *npool.ExistCountryCondsRequest) (*npool.ExistCountryCondsResponse, error) {
 	var err error
 
-	_, span := otel.Tracer(constant.ServiceName).Start(ctx, "ExistDetailConds")
+	_, span := otel.Tracer(constant.ServiceName).Start(ctx, "ExistCountryConds")
 	defer span.End()
 
 	defer func() {
@@ -233,18 +233,18 @@ func (s *Server) ExistDetailConds(ctx context.Context,
 	exist, err := crud.ExistConds(ctx, in.GetConds())
 	if err != nil {
 		logger.Sugar().Errorf("fail check country: %v", err)
-		return &npool.ExistDetailCondsResponse{}, status.Error(codes.Internal, err.Error())
+		return &npool.ExistCountryCondsResponse{}, status.Error(codes.Internal, err.Error())
 	}
 
-	return &npool.ExistDetailCondsResponse{
+	return &npool.ExistCountryCondsResponse{
 		Info: exist,
 	}, nil
 }
 
-func (s *Server) CountDetails(ctx context.Context, in *npool.CountDetailsRequest) (*npool.CountDetailsResponse, error) {
+func (s *Server) CountCountries(ctx context.Context, in *npool.CountCountriesRequest) (*npool.CountCountriesResponse, error) {
 	var err error
 
-	_, span := otel.Tracer(constant.ServiceName).Start(ctx, "CountDetails")
+	_, span := otel.Tracer(constant.ServiceName).Start(ctx, "CountCountries")
 	defer span.End()
 
 	defer func() {
@@ -260,10 +260,10 @@ func (s *Server) CountDetails(ctx context.Context, in *npool.CountDetailsRequest
 	total, err := crud.Count(ctx, in.GetConds())
 	if err != nil {
 		logger.Sugar().Errorf("fail count countrys: %v", err)
-		return &npool.CountDetailsResponse{}, status.Error(codes.Internal, err.Error())
+		return &npool.CountCountriesResponse{}, status.Error(codes.Internal, err.Error())
 	}
 
-	return &npool.CountDetailsResponse{
+	return &npool.CountCountriesResponse{
 		Info: total,
 	}, nil
 }
