@@ -267,3 +267,36 @@ func (s *Server) CountCountries(ctx context.Context, in *npool.CountCountriesReq
 		Info: total,
 	}, nil
 }
+
+func (s *Server) DeleteCountry(ctx context.Context, in *npool.DeleteCountryRequest) (*npool.DeleteCountryResponse, error) {
+	var err error
+
+	_, span := otel.Tracer(constant.ServiceName).Start(ctx, "DeleteCountry")
+	defer span.End()
+
+	defer func() {
+		if err != nil {
+			span.SetStatus(scodes.Error, err.Error())
+			span.RecordError(err)
+		}
+	}()
+
+	span = commontracer.TraceID(span, in.GetID())
+
+	id, err := uuid.Parse(in.GetID())
+	if err != nil {
+		return &npool.DeleteCountryResponse{}, status.Error(codes.InvalidArgument, err.Error())
+	}
+
+	span = commontracer.TraceInvoker(span, "appcountry", "crud", "Delete")
+
+	info, err := crud.Delete(ctx, id)
+	if err != nil {
+		logger.Sugar().Errorf("fail check appcountry: %v", err)
+		return &npool.DeleteCountryResponse{}, status.Error(codes.Internal, err.Error())
+	}
+
+	return &npool.DeleteCountryResponse{
+		Info: converter.Ent2Grpc(info),
+	}, nil
+}
