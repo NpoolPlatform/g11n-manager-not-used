@@ -91,6 +91,44 @@ func (s *Server) CreateMessages(ctx context.Context, in *npool.CreateMessagesReq
 	}, nil
 }
 
+func (s *Server) UpdateMessage(ctx context.Context, in *npool.UpdateMessageRequest) (*npool.UpdateMessageResponse, error) {
+	var err error
+
+	_, span := otel.Tracer(constant.ServiceName).Start(ctx, "UpdateMessage")
+	defer span.End()
+
+	defer func() {
+		if err != nil {
+			span.SetStatus(scodes.Error, err.Error())
+			span.RecordError(err)
+		}
+	}()
+
+	span = tracer.Trace(span, in.GetInfo())
+
+	if _, err := uuid.Parse(in.GetInfo().GetID()); err != nil {
+		return &npool.UpdateMessageResponse{}, status.Error(codes.InvalidArgument, err.Error())
+	}
+	if in.GetInfo().MessageID != nil && in.GetInfo().GetMessageID() == "" {
+		return &npool.UpdateMessageResponse{}, status.Error(codes.InvalidArgument, "invalid messageid")
+	}
+	if in.GetInfo().Message != nil && in.GetInfo().GetMessage() == "" {
+		return &npool.UpdateMessageResponse{}, status.Error(codes.InvalidArgument, "invalid message")
+	}
+
+	span = commontracer.TraceInvoker(span, "message", "crud", "Update")
+
+	info, err := crud.Update(ctx, in.GetInfo())
+	if err != nil {
+		logger.Sugar().Errorf("fail update message: %v", err.Error())
+		return &npool.UpdateMessageResponse{}, status.Error(codes.Internal, err.Error())
+	}
+
+	return &npool.UpdateMessageResponse{
+		Info: converter.Ent2Grpc(info),
+	}, nil
+}
+
 func (s *Server) GetMessage(ctx context.Context, in *npool.GetMessageRequest) (*npool.GetMessageResponse, error) {
 	var err error
 
@@ -265,5 +303,38 @@ func (s *Server) CountMessages(ctx context.Context, in *npool.CountMessagesReque
 
 	return &npool.CountMessagesResponse{
 		Info: total,
+	}, nil
+}
+
+func (s *Server) DeleteMessage(ctx context.Context, in *npool.DeleteMessageRequest) (*npool.DeleteMessageResponse, error) {
+	var err error
+
+	_, span := otel.Tracer(constant.ServiceName).Start(ctx, "DeleteMessage")
+	defer span.End()
+
+	defer func() {
+		if err != nil {
+			span.SetStatus(scodes.Error, err.Error())
+			span.RecordError(err)
+		}
+	}()
+
+	span = commontracer.TraceID(span, in.GetID())
+
+	id, err := uuid.Parse(in.GetID())
+	if err != nil {
+		return &npool.DeleteMessageResponse{}, status.Error(codes.InvalidArgument, err.Error())
+	}
+
+	span = commontracer.TraceInvoker(span, "message", "crud", "Delete")
+
+	info, err := crud.Delete(ctx, id)
+	if err != nil {
+		logger.Sugar().Errorf("fail delete message: %v", err)
+		return &npool.DeleteMessageResponse{}, status.Error(codes.Internal, err.Error())
+	}
+
+	return &npool.DeleteMessageResponse{
+		Info: converter.Ent2Grpc(info),
 	}, nil
 }
