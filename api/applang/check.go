@@ -51,7 +51,7 @@ func duplicate(infos []*npool.LangReq) error {
 }
 
 func Validate(info *npool.LangReq) error {
-	return valudate(info)
+	return validate(info)
 }
 
 func Duplicate(infos []*npool.LangReq) error {
