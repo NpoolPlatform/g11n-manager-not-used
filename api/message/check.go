@@ -49,3 +49,11 @@ func duplicate(infos []*npool.MessageReq) error {
 
 	return nil
 }
+
+func Validate(info *npool.MessageReq) error {
+	return validate(info)
+}
+
+func Duplicate(infos []*npool.MessageReq) error {
+	return duplicate(infos)
+}
