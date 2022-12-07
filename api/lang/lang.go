@@ -91,6 +91,49 @@ func (s *Server) CreateLangs(ctx context.Context, in *npool.CreateLangsRequest) 
 	}, nil
 }
 
+func (s *Server) UpdateLang(ctx context.Context, in *npool.UpdateLangRequest) (*npool.UpdateLangResponse, error) {
+	var err error
+
+	_, span := otel.Tracer(constant.ServiceName).Start(ctx, "UpdateLang")
+	defer span.End()
+
+	defer func() {
+		if err != nil {
+			span.SetStatus(scodes.Error, err.Error())
+			span.RecordError(err)
+		}
+	}()
+
+	span = tracer.Trace(span, in.GetInfo())
+
+	if _, err := uuid.Parse(in.GetInfo().GetID()); err != nil {
+		return &npool.UpdateLangResponse{}, status.Error(codes.InvalidArgument, err.Error())
+	}
+	if in.GetInfo().Lang != nil && in.GetInfo().GetLang() == "" {
+		return &npool.UpdateLangResponse{}, status.Error(codes.InvalidArgument, "Lang is invalid")
+	}
+	if in.GetInfo().Logo != nil && in.GetInfo().GetLogo() == "" {
+		return &npool.UpdateLangResponse{}, status.Error(codes.InvalidArgument, "Logo is invalid")
+	}
+	if in.GetInfo().Name != nil && in.GetInfo().GetName() == "" {
+		return &npool.UpdateLangResponse{}, status.Error(codes.InvalidArgument, "Name is invalid")
+	}
+	if in.GetInfo().Short != nil && in.GetInfo().GetShort() == "" {
+		return &npool.UpdateLangResponse{}, status.Error(codes.InvalidArgument, "Short is invalid")
+	}
+
+	span = commontracer.TraceInvoker(span, "lang", "crud", "Update")
+
+	info, err := crud.Update(ctx, in.GetInfo())
+	if err != nil {
+		logger.Sugar().Errorf("fail create lang: %v", err.Error())
+		return &npool.UpdateLangResponse{}, status.Error(codes.Internal, err.Error())
+	}
+
+	return &npool.UpdateLangResponse{
+		Info: converter.Ent2Grpc(info),
+	}, nil
+}
 func (s *Server) GetLang(ctx context.Context, in *npool.GetLangRequest) (*npool.GetLangResponse, error) {
 	var err error
 

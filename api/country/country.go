@@ -91,6 +91,50 @@ func (s *Server) CreateCountries(ctx context.Context, in *npool.CreateCountriesR
 	}, nil
 }
 
+func (s *Server) UpdateCountry(ctx context.Context, in *npool.UpdateCountryRequest) (*npool.UpdateCountryResponse, error) {
+	var err error
+
+	_, span := otel.Tracer(constant.ServiceName).Start(ctx, "UpdateCountry")
+	defer span.End()
+
+	defer func() {
+		if err != nil {
+			span.SetStatus(scodes.Error, err.Error())
+			span.RecordError(err)
+		}
+	}()
+
+	span = tracer.Trace(span, in.GetInfo())
+
+	if _, err := uuid.Parse(in.GetInfo().GetID()); err != nil {
+		return &npool.UpdateCountryResponse{}, status.Error(codes.InvalidArgument, err.Error())
+	}
+	if in.GetInfo().Country != nil && in.GetInfo().GetCountry() == "" {
+		return &npool.UpdateCountryResponse{}, status.Error(codes.InvalidArgument, "Country is invalid")
+	}
+	if in.GetInfo().Flag != nil && in.GetInfo().GetFlag() == "" {
+		return &npool.UpdateCountryResponse{}, status.Error(codes.InvalidArgument, "Flag is invalid")
+	}
+	if in.GetInfo().Code != nil && in.GetInfo().GetCode() == "" {
+		return &npool.UpdateCountryResponse{}, status.Error(codes.InvalidArgument, "Code is invalid")
+	}
+	if in.GetInfo().Short != nil && in.GetInfo().GetShort() == "" {
+		return &npool.UpdateCountryResponse{}, status.Error(codes.InvalidArgument, "Short is invalid")
+	}
+
+	span = commontracer.TraceInvoker(span, "country", "crud", "Update")
+
+	info, err := crud.Update(ctx, in.GetInfo())
+	if err != nil {
+		logger.Sugar().Errorf("fail create country: %v", err.Error())
+		return &npool.UpdateCountryResponse{}, status.Error(codes.Internal, err.Error())
+	}
+
+	return &npool.UpdateCountryResponse{
+		Info: converter.Ent2Grpc(info),
+	}, nil
+}
+
 func (s *Server) GetCountry(ctx context.Context, in *npool.GetCountryRequest) (*npool.GetCountryResponse, error) {
 	var err error
 
