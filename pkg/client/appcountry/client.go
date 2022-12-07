@@ -165,3 +165,19 @@ func CountCountries(ctx context.Context, conds *npool.Conds) (uint32, error) {
 	}
 	return infos.(uint32), nil
 }
+
+func DeleteCountry(ctx context.Context, id string) (*npool.Country, error) {
+	info, err := withCRUD(ctx, func(_ctx context.Context, cli npool.ManagerClient) (cruder.Any, error) {
+		resp, err := cli.DeleteCountry(ctx, &npool.DeleteCountryRequest{
+			ID: id,
+		})
+		if err != nil {
+			return nil, fmt.Errorf("fail delete appcountry: %v", err)
+		}
+		return resp.GetInfo(), nil
+	})
+	if err != nil {
+		return nil, fmt.Errorf("fail delete appcountry: %v", err)
+	}
+	return info.(*npool.Country), nil
+}
