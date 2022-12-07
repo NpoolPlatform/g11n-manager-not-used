@@ -91,6 +91,38 @@ func (s *Server) CreateLangs(ctx context.Context, in *npool.CreateLangsRequest) 
 	}, nil
 }
 
+func (s *Server) UpdateLang(ctx context.Context, in *npool.UpdateLangRequest) (*npool.UpdateLangResponse, error) {
+	var err error
+
+	_, span := otel.Tracer(constant.ServiceName).Start(ctx, "UpdateLang")
+	defer span.End()
+
+	defer func() {
+		if err != nil {
+			span.SetStatus(scodes.Error, err.Error())
+			span.RecordError(err)
+		}
+	}()
+
+	span = tracer.Trace(span, in.GetInfo())
+
+	if _, err := uuid.Parse(in.GetInfo().GetID()); err != nil {
+		return &npool.UpdateLangResponse{}, status.Error(codes.InvalidArgument, err.Error())
+	}
+
+	span = commontracer.TraceInvoker(span, "applang", "crud", "Update")
+
+	info, err := crud.Update(ctx, in.GetInfo())
+	if err != nil {
+		logger.Sugar().Errorf("fail create applang: %v", err.Error())
+		return &npool.UpdateLangResponse{}, status.Error(codes.Internal, err.Error())
+	}
+
+	return &npool.UpdateLangResponse{
+		Info: converter.Ent2Grpc(info),
+	}, nil
+}
+
 func (s *Server) GetLang(ctx context.Context, in *npool.GetLangRequest) (*npool.GetLangResponse, error) {
 	var err error
 
@@ -265,5 +297,35 @@ func (s *Server) CountLangs(ctx context.Context, in *npool.CountLangsRequest) (*
 
 	return &npool.CountLangsResponse{
 		Info: total,
+	}, nil
+}
+
+func (s *Server) DeleteLang(ctx context.Context, in *npool.DeleteLangRequest) (*npool.DeleteLangResponse, error) {
+	var err error
+
+	_, span := otel.Tracer(constant.ServiceName).Start(ctx, "DeleteLang")
+	defer span.End()
+
+	defer func() {
+		if err != nil {
+			span.SetStatus(scodes.Error, err.Error())
+			span.RecordError(err)
+		}
+	}()
+
+	if _, err := uuid.Parse(in.GetID()); err != nil {
+		return &npool.DeleteLangResponse{}, status.Error(codes.InvalidArgument, err.Error())
+	}
+
+	span = commontracer.TraceInvoker(span, "applang", "crud", "Delete")
+
+	info, err := crud.Delete(ctx, uuid.MustParse(in.GetID()))
+	if err != nil {
+		logger.Sugar().Errorf("fail create applang: %v", err.Error())
+		return &npool.DeleteLangResponse{}, status.Error(codes.Internal, err.Error())
+	}
+
+	return &npool.DeleteLangResponse{
+		Info: converter.Ent2Grpc(info),
 	}, nil
 }
