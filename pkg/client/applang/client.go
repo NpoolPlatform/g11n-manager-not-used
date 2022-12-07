@@ -66,6 +66,22 @@ func CreateLangs(ctx context.Context, in []*npool.LangReq) ([]*npool.Lang, error
 	return infos.([]*npool.Lang), nil
 }
 
+func UpdateLang(ctx context.Context, in *npool.LangReq) (*npool.Lang, error) {
+	info, err := withCRUD(ctx, func(_ctx context.Context, cli npool.ManagerClient) (cruder.Any, error) {
+		resp, err := cli.UpdateLang(ctx, &npool.UpdateLangRequest{
+			Info: in,
+		})
+		if err != nil {
+			return nil, fmt.Errorf("fail update lang: %v", err)
+		}
+		return resp.GetInfo(), nil
+	})
+	if err != nil {
+		return nil, fmt.Errorf("fail update lang: %v", err)
+	}
+	return info.(*npool.Lang), nil
+}
+
 func GetLang(ctx context.Context, id string) (*npool.Lang, error) {
 	info, err := withCRUD(ctx, func(_ctx context.Context, cli npool.ManagerClient) (cruder.Any, error) {
 		resp, err := cli.GetLang(ctx, &npool.GetLangRequest{
@@ -164,4 +180,20 @@ func CountLangs(ctx context.Context, conds *npool.Conds) (uint32, error) {
 		return 0, fmt.Errorf("fail count lang: %v", err)
 	}
 	return infos.(uint32), nil
+}
+
+func DeleteLang(ctx context.Context, id string) (*npool.Lang, error) {
+	info, err := withCRUD(ctx, func(_ctx context.Context, cli npool.ManagerClient) (cruder.Any, error) {
+		resp, err := cli.DeleteLang(ctx, &npool.DeleteLangRequest{
+			ID: id,
+		})
+		if err != nil {
+			return nil, fmt.Errorf("fail delete lang: %v", err)
+		}
+		return resp.GetInfo(), nil
+	})
+	if err != nil {
+		return nil, fmt.Errorf("fail delete lang: %v", err)
+	}
+	return info.(*npool.Lang), nil
 }

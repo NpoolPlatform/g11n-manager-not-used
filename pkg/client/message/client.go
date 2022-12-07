@@ -66,6 +66,22 @@ func CreateMessages(ctx context.Context, in []*npool.MessageReq) ([]*npool.Messa
 	return infos.([]*npool.Message), nil
 }
 
+func UpdateMessage(ctx context.Context, in *npool.MessageReq) (*npool.Message, error) {
+	info, err := withCRUD(ctx, func(_ctx context.Context, cli npool.ManagerClient) (cruder.Any, error) {
+		resp, err := cli.UpdateMessage(ctx, &npool.UpdateMessageRequest{
+			Info: in,
+		})
+		if err != nil {
+			return nil, fmt.Errorf("fail update message: %v", err)
+		}
+		return resp.GetInfo(), nil
+	})
+	if err != nil {
+		return nil, fmt.Errorf("fail update message: %v", err)
+	}
+	return info.(*npool.Message), nil
+}
+
 func GetMessage(ctx context.Context, id string) (*npool.Message, error) {
 	info, err := withCRUD(ctx, func(_ctx context.Context, cli npool.ManagerClient) (cruder.Any, error) {
 		resp, err := cli.GetMessage(ctx, &npool.GetMessageRequest{
@@ -164,4 +180,20 @@ func CountMessages(ctx context.Context, conds *npool.Conds) (uint32, error) {
 		return 0, fmt.Errorf("fail count message: %v", err)
 	}
 	return infos.(uint32), nil
+}
+
+func DeleteMessage(ctx context.Context, id string) (*npool.Message, error) {
+	info, err := withCRUD(ctx, func(_ctx context.Context, cli npool.ManagerClient) (cruder.Any, error) {
+		resp, err := cli.DeleteMessage(ctx, &npool.DeleteMessageRequest{
+			ID: id,
+		})
+		if err != nil {
+			return nil, fmt.Errorf("fail delete message: %v", err)
+		}
+		return resp.GetInfo(), nil
+	})
+	if err != nil {
+		return nil, fmt.Errorf("fail delete message: %v", err)
+	}
+	return info.(*npool.Message), nil
 }
