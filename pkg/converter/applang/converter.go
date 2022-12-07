@@ -11,10 +11,12 @@ func Ent2Grpc(row *ent.AppLang) *npool.Lang {
 	}
 
 	return &npool.Lang{
-		ID:     row.ID.String(),
-		AppID:  row.ID.String(),
-		LangID: row.ID.String(),
-		Main:   row.Main,
+		ID:        row.ID.String(),
+		AppID:     row.ID.String(),
+		LangID:    row.ID.String(),
+		Main:      row.Main,
+		CreatedAt: row.CreatedAt,
+		UpdatedAt: row.UpdatedAt,
 	}
 }
 

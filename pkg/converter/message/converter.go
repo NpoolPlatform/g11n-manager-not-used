@@ -18,6 +18,8 @@ func Ent2Grpc(row *ent.Message) *npool.Message {
 		Message:   row.Message,
 		GetIndex:  row.GetIndex,
 		Disabled:  row.Disabled,
+		CreatedAt: row.CreatedAt,
+		UpdatedAt: row.UpdatedAt,
 	}
 }
 

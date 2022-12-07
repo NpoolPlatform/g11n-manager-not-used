@@ -11,11 +11,13 @@ func Ent2Grpc(row *ent.Lang) *npool.Lang {
 	}
 
 	return &npool.Lang{
-		ID:    row.ID.String(),
-		Lang:  row.Lang,
-		Logo:  row.Logo,
-		Name:  row.Name,
-		Short: row.Short,
+		ID:        row.ID.String(),
+		Lang:      row.Lang,
+		Logo:      row.Logo,
+		Name:      row.Name,
+		Short:     row.Short,
+		CreatedAt: row.CreatedAt,
+		UpdatedAt: row.UpdatedAt,
 	}
 }
 

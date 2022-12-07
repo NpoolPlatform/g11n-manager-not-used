@@ -11,11 +11,13 @@ func Ent2Grpc(row *ent.Country) *npool.Country {
 	}
 
 	return &npool.Country{
-		ID:      row.ID.String(),
-		Country: row.Country,
-		Flag:    row.Flag,
-		Code:    row.Code,
-		Short:   row.Short,
+		ID:        row.ID.String(),
+		Country:   row.Country,
+		Flag:      row.Flag,
+		Code:      row.Code,
+		Short:     row.Short,
+		CreatedAt: row.CreatedAt,
+		UpdatedAt: row.UpdatedAt,
 	}
 }
 

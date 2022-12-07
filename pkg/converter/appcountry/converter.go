@@ -14,6 +14,8 @@ func Ent2Grpc(row *ent.AppCountry) *npool.Country {
 		ID:        row.ID.String(),
 		AppID:     row.ID.String(),
 		CountryID: row.ID.String(),
+		CreatedAt: row.CreatedAt,
+		UpdatedAt: row.UpdatedAt,
 	}
 }
 
