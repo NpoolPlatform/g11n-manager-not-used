@@ -114,7 +114,7 @@ func GetMessageOnly(ctx context.Context, conds *npool.Conds) (*npool.Message, er
 	return info.(*npool.Message), nil
 }
 
-func GetMessages(ctx context.Context, conds *npool.Conds, limit, offset int32) ([]*npool.Message, uint32, error) {
+func GetMessages(ctx context.Context, conds *npool.Conds, offset, limit int32) ([]*npool.Message, uint32, error) {
 	var total uint32
 	infos, err := withCRUD(ctx, func(_ctx context.Context, cli npool.ManagerClient) (cruder.Any, error) {
 		resp, err := cli.GetMessages(ctx, &npool.GetMessagesRequest{

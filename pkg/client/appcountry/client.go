@@ -98,7 +98,7 @@ func GetCountryOnly(ctx context.Context, conds *npool.Conds) (*npool.Country, er
 	return info.(*npool.Country), nil
 }
 
-func GetCountries(ctx context.Context, conds *npool.Conds, limit, offset int32) ([]*npool.Country, uint32, error) {
+func GetCountries(ctx context.Context, conds *npool.Conds, offset, limit int32) ([]*npool.Country, uint32, error) {
 	var total uint32
 	infos, err := withCRUD(ctx, func(_ctx context.Context, cli npool.ManagerClient) (cruder.Any, error) {
 		resp, err := cli.GetCountries(ctx, &npool.GetCountriesRequest{
