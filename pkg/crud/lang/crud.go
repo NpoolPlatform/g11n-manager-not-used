@@ -219,6 +219,14 @@ func SetQueryConds(conds *npool.Conds, cli *ent.Client) (*ent.LangQuery, error) 
 			return nil, fmt.Errorf("invalid lang field")
 		}
 	}
+	if conds.Langs != nil {
+		switch conds.GetLangs().GetOp() {
+		case cruder.IN:
+			stm.Where(lang.LangIn(conds.GetLangs().GetValue()...))
+		default:
+			return nil, fmt.Errorf("invalid lang field")
+		}
+	}
 	return stm, nil
 }
 

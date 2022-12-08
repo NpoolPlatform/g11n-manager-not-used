@@ -218,6 +218,14 @@ func SetQueryConds(conds *npool.Conds, cli *ent.Client) (*ent.CountryQuery, erro
 			return nil, fmt.Errorf("invalid country field")
 		}
 	}
+	if conds.Countries != nil {
+		switch conds.GetCountries().GetOp() {
+		case cruder.IN:
+			stm.Where(country.CountryIn(conds.GetCountries().GetValue()...))
+		default:
+			return nil, fmt.Errorf("invalid country field")
+		}
+	}
 	return stm, nil
 }
 
