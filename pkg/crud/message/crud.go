@@ -225,7 +225,7 @@ func SetQueryConds(conds *npool.Conds, cli *ent.Client) (*ent.MessageQuery, erro
 	}
 	if conds.MessageIDs != nil {
 		switch conds.GetMessageIDs().GetOp() {
-		case cruder.LIKE:
+		case cruder.IN:
 			stm.Where(message.MessageIDIn(conds.GetMessageIDs().GetValue()...))
 		default:
 			return nil, fmt.Errorf("invalid message field")
