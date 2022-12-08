@@ -223,6 +223,14 @@ func SetQueryConds(conds *npool.Conds, cli *ent.Client) (*ent.MessageQuery, erro
 			return nil, fmt.Errorf("invalid message field")
 		}
 	}
+	if conds.MessageIDs != nil {
+		switch conds.GetMessageIDs().GetOp() {
+		case cruder.LIKE:
+			stm.Where(message.MessageIDIn(conds.GetMessageIDs().GetValue()...))
+		default:
+			return nil, fmt.Errorf("invalid message field")
+		}
+	}
 	return stm, nil
 }
 
