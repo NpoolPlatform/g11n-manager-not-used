@@ -49,3 +49,11 @@ func duplicate(infos []*npool.CountryReq) error {
 
 	return nil
 }
+
+func Validate(info *npool.CountryReq) error {
+	return validate(info)
+}
+
+func Duplicate(infos []*npool.CountryReq) error {
+	return duplicate(infos)
+}
