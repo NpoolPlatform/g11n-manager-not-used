@@ -194,8 +194,10 @@ func SetQueryConds(conds *npool.Conds, cli *ent.Client) (*ent.CountryQuery, erro
 	}
 	if conds.Country != nil {
 		switch conds.GetCountry().GetOp() {
-		case cruder.LIKE:
+		case cruder.EQ:
 			stm.Where(country.Country(conds.GetCountry().GetValue()))
+		case cruder.LIKE:
+			stm.Where(country.CountryContains(conds.GetCountry().GetValue()))
 		default:
 			return nil, fmt.Errorf("invalid country field")
 		}
