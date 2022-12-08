@@ -66,6 +66,22 @@ func CreateCountries(ctx context.Context, in []*npool.CountryReq) ([]*npool.Coun
 	return infos.([]*npool.Country), nil
 }
 
+func UpdateCountry(ctx context.Context, in *npool.CountryReq) (*npool.Country, error) {
+	info, err := withCRUD(ctx, func(_ctx context.Context, cli npool.ManagerClient) (cruder.Any, error) {
+		resp, err := cli.UpdateCountry(ctx, &npool.UpdateCountryRequest{
+			Info: in,
+		})
+		if err != nil {
+			return nil, fmt.Errorf("fail update country: %v", err)
+		}
+		return resp.GetInfo(), nil
+	})
+	if err != nil {
+		return nil, fmt.Errorf("fail update country: %v", err)
+	}
+	return info.(*npool.Country), nil
+}
+
 func GetCountry(ctx context.Context, id string) (*npool.Country, error) {
 	info, err := withCRUD(ctx, func(_ctx context.Context, cli npool.ManagerClient) (cruder.Any, error) {
 		resp, err := cli.GetCountry(ctx, &npool.GetCountryRequest{
