@@ -86,6 +86,8 @@ var (
 	DefaultMessageID string
 	// DefaultMessage holds the default value on creation for the "message" field.
 	DefaultMessage string
+	// MessageValidator is a validator for the "message" field. It is called by the builders before save.
+	MessageValidator func(string) error
 	// DefaultGetIndex holds the default value on creation for the "get_index" field.
 	DefaultGetIndex uint32
 	// DefaultDisabled holds the default value on creation for the "disabled" field.
