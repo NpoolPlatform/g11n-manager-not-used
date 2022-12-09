@@ -20,8 +20,6 @@ func (Message) Mixin() []ent.Mixin {
 
 // Fields of the Message.
 func (Message) Fields() []ent.Field {
-	const maxLen = 16016
-
 	return []ent.Field{
 		field.
 			UUID("id", uuid.UUID{}).
