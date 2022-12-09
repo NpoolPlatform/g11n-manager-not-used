@@ -245,8 +245,6 @@ func init() {
 	messageDescMessage := messageFields[4].Descriptor()
 	// message.DefaultMessage holds the default value on creation for the message field.
 	message.DefaultMessage = messageDescMessage.Default.(string)
-	// message.MessageValidator is a validator for the "message" field. It is called by the builders before save.
-	message.MessageValidator = messageDescMessage.Validators[0].(func(string) error)
 	// messageDescGetIndex is the schema descriptor for get_index field.
 	messageDescGetIndex := messageFields[5].Descriptor()
 	// message.DefaultGetIndex holds the default value on creation for the get_index field.

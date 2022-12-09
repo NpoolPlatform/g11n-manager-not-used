@@ -332,11 +332,6 @@ func (mc *MessageCreate) check() error {
 	if _, ok := mc.mutation.DeletedAt(); !ok {
 		return &ValidationError{Name: "deleted_at", err: errors.New(`ent: missing required field "Message.deleted_at"`)}
 	}
-	if v, ok := mc.mutation.Message(); ok {
-		if err := message.MessageValidator(v); err != nil {
-			return &ValidationError{Name: "message", err: fmt.Errorf(`ent: validator failed for field "Message.message": %w`, err)}
-		}
-	}
 	return nil
 }
 

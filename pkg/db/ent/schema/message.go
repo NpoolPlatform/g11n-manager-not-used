@@ -40,8 +40,7 @@ func (Message) Fields() []ent.Field {
 			Optional().
 			Default(""),
 		field.
-			String("message").
-			MaxLen(maxLen).
+			Text("message").
 			Optional().
 			Default(""),
 		field.

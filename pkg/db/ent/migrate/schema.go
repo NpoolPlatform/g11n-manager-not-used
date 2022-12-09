@@ -82,7 +82,7 @@ var (
 		{Name: "app_id", Type: field.TypeUUID, Nullable: true},
 		{Name: "lang_id", Type: field.TypeUUID, Nullable: true},
 		{Name: "message_id", Type: field.TypeString, Nullable: true, Default: ""},
-		{Name: "message", Type: field.TypeString, Nullable: true, Size: 16016, Default: ""},
+		{Name: "message", Type: field.TypeString, Nullable: true, Size: 2147483647, Default: ""},
 		{Name: "get_index", Type: field.TypeUint32, Nullable: true, Default: 0},
 		{Name: "disabled", Type: field.TypeBool, Nullable: true, Default: false},
 		{Name: "short", Type: field.TypeString, Nullable: true, Default: ""},
