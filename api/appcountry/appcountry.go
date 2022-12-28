@@ -124,6 +124,25 @@ func (s *Server) GetCountry(ctx context.Context, in *npool.GetCountryRequest) (*
 	}, nil
 }
 
+func ValidateConds(ctx context.Context, conds *npool.Conds) error {
+	if conds.ID != nil {
+		if _, err := uuid.Parse(conds.GetID().GetValue()); err != nil {
+			return err
+		}
+	}
+	if conds.AppID != nil {
+		if _, err := uuid.Parse(conds.GetAppID().GetValue()); err != nil {
+			return err
+		}
+	}
+	if conds.CountryID != nil {
+		if _, err := uuid.Parse(conds.GetCountryID().GetValue()); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 func (s *Server) GetCountryOnly(ctx context.Context, in *npool.GetCountryOnlyRequest) (*npool.GetCountryOnlyResponse, error) {
 	var err error
 
@@ -136,6 +155,10 @@ func (s *Server) GetCountryOnly(ctx context.Context, in *npool.GetCountryOnlyReq
 			span.RecordError(err)
 		}
 	}()
+
+	if err := ValidateConds(ctx, in.GetConds()); err != nil {
+		return &npool.GetCountryOnlyResponse{}, status.Error(codes.InvalidArgument, err.Error())
+	}
 
 	span = tracer.TraceConds(span, in.GetConds())
 	span = commontracer.TraceInvoker(span, "appcountry", "crud", "RowOnly")
@@ -163,6 +186,10 @@ func (s *Server) GetCountries(ctx context.Context, in *npool.GetCountriesRequest
 			span.RecordError(err)
 		}
 	}()
+
+	if err := ValidateConds(ctx, in.GetConds()); err != nil {
+		return &npool.GetCountriesResponse{}, status.Error(codes.InvalidArgument, err.Error())
+	}
 
 	span = tracer.TraceConds(span, in.GetConds())
 	span = commontracer.TraceOffsetLimit(span, int(in.GetOffset()), int(in.GetLimit()))
@@ -227,6 +254,10 @@ func (s *Server) ExistCountryConds(ctx context.Context,
 		}
 	}()
 
+	if err := ValidateConds(ctx, in.GetConds()); err != nil {
+		return &npool.ExistCountryCondsResponse{}, status.Error(codes.InvalidArgument, err.Error())
+	}
+
 	span = tracer.TraceConds(span, in.GetConds())
 	span = commontracer.TraceInvoker(span, "appcountry", "crud", "ExistConds")
 
@@ -253,6 +284,10 @@ func (s *Server) CountCountries(ctx context.Context, in *npool.CountCountriesReq
 			span.RecordError(err)
 		}
 	}()
+
+	if err := ValidateConds(ctx, in.GetConds()); err != nil {
+		return &npool.CountCountriesResponse{}, status.Error(codes.InvalidArgument, err.Error())
+	}
 
 	span = tracer.TraceConds(span, in.GetConds())
 	span = commontracer.TraceInvoker(span, "appcountry", "crud", "Count")
