@@ -3,6 +3,7 @@ package message
 
 import (
 	"context"
+	"fmt"
 
 	converter "github.com/NpoolPlatform/g11n-manager/pkg/converter/message"
 	crud "github.com/NpoolPlatform/g11n-manager/pkg/crud/message"
@@ -162,6 +163,33 @@ func (s *Server) GetMessage(ctx context.Context, in *npool.GetMessageRequest) (*
 	}, nil
 }
 
+func ValidateConds(ctx context.Context, conds *npool.Conds) error {
+	if conds.ID != nil {
+		if _, err := uuid.Parse(conds.GetID().GetValue()); err != nil {
+			return err
+		}
+	}
+	if conds.AppID != nil {
+		if _, err := uuid.Parse(conds.GetAppID().GetValue()); err != nil {
+			return err
+		}
+	}
+	if conds.LangID != nil {
+		if _, err := uuid.Parse(conds.GetLangID().GetValue()); err != nil {
+			return err
+		}
+	}
+	if conds.MessageID != nil && conds.GetMessageID().GetValue() == "" {
+		return fmt.Errorf("messageid is invalid")
+	}
+	for _, id := range conds.GetMessageIDs().GetValue() {
+		if id == "" {
+			return fmt.Errorf("messageid is invalid")
+		}
+	}
+	return nil
+}
+
 func (s *Server) GetMessageOnly(ctx context.Context, in *npool.GetMessageOnlyRequest) (*npool.GetMessageOnlyResponse, error) {
 	var err error
 
@@ -174,6 +202,10 @@ func (s *Server) GetMessageOnly(ctx context.Context, in *npool.GetMessageOnlyReq
 			span.RecordError(err)
 		}
 	}()
+
+	if err := ValidateConds(ctx, in.GetConds()); err != nil {
+		return &npool.GetMessageOnlyResponse{}, status.Error(codes.InvalidArgument, err.Error())
+	}
 
 	span = tracer.TraceConds(span, in.GetConds())
 	span = commontracer.TraceInvoker(span, "message", "crud", "RowOnly")
@@ -201,6 +233,10 @@ func (s *Server) GetMessages(ctx context.Context, in *npool.GetMessagesRequest) 
 			span.RecordError(err)
 		}
 	}()
+
+	if err := ValidateConds(ctx, in.GetConds()); err != nil {
+		return &npool.GetMessagesResponse{}, status.Error(codes.InvalidArgument, err.Error())
+	}
 
 	span = tracer.TraceConds(span, in.GetConds())
 	span = commontracer.TraceOffsetLimit(span, int(in.GetOffset()), int(in.GetLimit()))
@@ -265,6 +301,10 @@ func (s *Server) ExistMessageConds(ctx context.Context,
 		}
 	}()
 
+	if err := ValidateConds(ctx, in.GetConds()); err != nil {
+		return &npool.ExistMessageCondsResponse{}, status.Error(codes.InvalidArgument, err.Error())
+	}
+
 	span = tracer.TraceConds(span, in.GetConds())
 	span = commontracer.TraceInvoker(span, "message", "crud", "ExistConds")
 
@@ -291,6 +331,10 @@ func (s *Server) CountMessages(ctx context.Context, in *npool.CountMessagesReque
 			span.RecordError(err)
 		}
 	}()
+
+	if err := ValidateConds(ctx, in.GetConds()); err != nil {
+		return &npool.CountMessagesResponse{}, status.Error(codes.InvalidArgument, err.Error())
+	}
 
 	span = tracer.TraceConds(span, in.GetConds())
 	span = commontracer.TraceInvoker(span, "message", "crud", "Count")
