@@ -188,6 +188,8 @@ func SetQueryConds(conds *npool.Conds, cli *ent.Client) (*ent.CountryQuery, erro
 		switch conds.GetID().GetOp() {
 		case cruder.EQ:
 			stm.Where(country.ID(uuid.MustParse(conds.GetID().GetValue())))
+		case cruder.NEQ:
+			stm.Where(country.IDNEQ(uuid.MustParse(conds.GetID().GetValue())))
 		default:
 			return nil, fmt.Errorf("invalid country field")
 		}
