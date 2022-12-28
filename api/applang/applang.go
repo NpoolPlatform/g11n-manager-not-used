@@ -156,6 +156,25 @@ func (s *Server) GetLang(ctx context.Context, in *npool.GetLangRequest) (*npool.
 	}, nil
 }
 
+func ValidateConds(ctx context.Context, conds *npool.Conds) error {
+	if conds.ID != nil {
+		if _, err := uuid.Parse(conds.GetID().GetValue()); err != nil {
+			return err
+		}
+	}
+	if conds.AppID != nil {
+		if _, err := uuid.Parse(conds.GetAppID().GetValue()); err != nil {
+			return err
+		}
+	}
+	if conds.LangID != nil {
+		if _, err := uuid.Parse(conds.GetLangID().GetValue()); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 func (s *Server) GetLangOnly(ctx context.Context, in *npool.GetLangOnlyRequest) (*npool.GetLangOnlyResponse, error) {
 	var err error
 
@@ -168,6 +187,10 @@ func (s *Server) GetLangOnly(ctx context.Context, in *npool.GetLangOnlyRequest) 
 			span.RecordError(err)
 		}
 	}()
+
+	if err := ValidateConds(ctx, in.GetConds()); err != nil {
+		return &npool.GetLangOnlyResponse{}, status.Error(codes.InvalidArgument, err.Error())
+	}
 
 	span = tracer.TraceConds(span, in.GetConds())
 	span = commontracer.TraceInvoker(span, "applang", "crud", "RowOnly")
@@ -195,6 +218,10 @@ func (s *Server) GetLangs(ctx context.Context, in *npool.GetLangsRequest) (*npoo
 			span.RecordError(err)
 		}
 	}()
+
+	if err := ValidateConds(ctx, in.GetConds()); err != nil {
+		return &npool.GetLangsResponse{}, status.Error(codes.InvalidArgument, err.Error())
+	}
 
 	span = tracer.TraceConds(span, in.GetConds())
 	span = commontracer.TraceOffsetLimit(span, int(in.GetOffset()), int(in.GetLimit()))
@@ -259,6 +286,10 @@ func (s *Server) ExistLangConds(ctx context.Context,
 		}
 	}()
 
+	if err := ValidateConds(ctx, in.GetConds()); err != nil {
+		return &npool.ExistLangCondsResponse{}, status.Error(codes.InvalidArgument, err.Error())
+	}
+
 	span = tracer.TraceConds(span, in.GetConds())
 	span = commontracer.TraceInvoker(span, "applang", "crud", "ExistConds")
 
@@ -285,6 +316,10 @@ func (s *Server) CountLangs(ctx context.Context, in *npool.CountLangsRequest) (*
 			span.RecordError(err)
 		}
 	}()
+
+	if err := ValidateConds(ctx, in.GetConds()); err != nil {
+		return &npool.CountLangsResponse{}, status.Error(codes.InvalidArgument, err.Error())
+	}
 
 	span = tracer.TraceConds(span, in.GetConds())
 	span = commontracer.TraceInvoker(span, "applang", "crud", "Count")
