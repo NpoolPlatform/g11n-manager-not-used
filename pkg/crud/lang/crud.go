@@ -189,6 +189,8 @@ func SetQueryConds(conds *npool.Conds, cli *ent.Client) (*ent.LangQuery, error) 
 		switch conds.GetID().GetOp() {
 		case cruder.EQ:
 			stm.Where(lang.ID(uuid.MustParse(conds.GetID().GetValue())))
+		case cruder.NEQ:
+			stm.Where(lang.IDNEQ(uuid.MustParse(conds.GetID().GetValue())))
 		default:
 			return nil, fmt.Errorf("invalid lang field")
 		}
