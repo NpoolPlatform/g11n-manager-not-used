@@ -233,6 +233,14 @@ func SetQueryConds(conds *npool.Conds, cli *ent.Client) (*ent.MessageQuery, erro
 			return nil, fmt.Errorf("invalid message field")
 		}
 	}
+	if conds.Disabled != nil {
+		switch conds.GetDisabled().GetOp() {
+		case cruder.EQ:
+			stm.Where(message.Disabled(conds.GetDisabled().GetValue()))
+		default:
+			return nil, fmt.Errorf("invalid message field")
+		}
+	}
 	return stm, nil
 }
 
