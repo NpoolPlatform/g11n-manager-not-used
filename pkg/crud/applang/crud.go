@@ -197,6 +197,18 @@ func SetQueryConds(conds *npool.Conds, cli *ent.Client) (*ent.AppLangQuery, erro
 			return nil, fmt.Errorf("invalid applang field")
 		}
 	}
+	if len(conds.GetLangIDs().GetValue()) > 0 {
+		ids := []uuid.UUID{}
+		for _, id := range conds.GetLangIDs().GetValue() {
+			ids = append(ids, uuid.MustParse(id))
+		}
+		switch conds.GetLangIDs().GetOp() {
+		case cruder.IN:
+			stm.Where(applang.LangIDIn(ids...))
+		default:
+			return nil, fmt.Errorf("invalid applang field")
+		}
+	}
 	return stm, nil
 }
 
